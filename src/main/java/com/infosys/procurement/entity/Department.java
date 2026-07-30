@@ -1,7 +1,10 @@
 package com.infosys.procurement.entity;
 
 import jakarta.persistence.*;
-        import lombok.*;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "department")
@@ -10,7 +13,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "categories")
 public class Department {
 
     @Id
@@ -18,14 +21,26 @@ public class Department {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "department_name",
+    @Column(
+            name = "department_name",
             nullable = false,
             unique = true,
-            length = 100)
+            length = 100
+    )
     private String departmentName;
 
-    @Column(name = "manager_name",
+    @Column(
+            name = "manager_name",
             nullable = false,
-            length = 100)
+            length = 100
+    )
     private String managerName;
+
+    @ManyToMany
+    @JoinTable(
+            name = "department_category",
+            joinColumns = @JoinColumn(name = "department_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 }

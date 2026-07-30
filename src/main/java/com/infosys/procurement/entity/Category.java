@@ -3,6 +3,9 @@ package com.infosys.procurement.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "category")
 @Getter
@@ -10,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "departments")
 public class Category {
 
     @Id
@@ -18,9 +21,14 @@ public class Category {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "category_name",
+    @Column(
+            name = "category_name",
             nullable = false,
             unique = true,
-            length = 100)
+            length = 100
+    )
     private String categoryName;
+
+    @ManyToMany(mappedBy = "categories")
+    private Set<Department> departments = new HashSet<>();
 }
