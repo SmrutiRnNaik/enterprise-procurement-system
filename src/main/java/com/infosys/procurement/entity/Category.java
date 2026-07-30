@@ -2,7 +2,7 @@ package com.infosys.procurement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +28,7 @@ public class Category {
             length = 100
     )
     private String categoryName;
-
+    @JsonIgnore
     @ManyToMany(mappedBy = "categories")
     private Set<Department> departments = new HashSet<>();
 }
