@@ -1,4 +1,11 @@
 package com.infosys.procurement.service;
 
-public class CategoryService {
+import com.infosys.procurement.entity.Category;
+
+import java.util.List;
+
+public interface CategoryService {
+
+    List<Category> getCategoriesByDepartmentId(Long departmentId);
+
 }
