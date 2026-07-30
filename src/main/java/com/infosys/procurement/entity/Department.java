@@ -2,7 +2,7 @@ package com.infosys.procurement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = "categories")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Department {
 
     @Id
