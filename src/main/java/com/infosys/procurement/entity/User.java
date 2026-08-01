@@ -1,5 +1,6 @@
 package com.infosys.procurement.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,10 +24,12 @@ public class User {
             length = 100)
     private String name;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "password",
             nullable = false,
             length = 255)
     private String password;
+
 
     @Column(name = "phone_number",
             nullable = false,
