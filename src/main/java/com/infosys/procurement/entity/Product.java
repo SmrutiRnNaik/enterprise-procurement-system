@@ -41,6 +41,12 @@ public class Product {
             nullable = false)
     private Integer quantity;
 
+    @Column(name = "total_price",
+            nullable = false,
+            precision = 12,
+            scale = 2)
+    private BigDecimal totalPrice;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;

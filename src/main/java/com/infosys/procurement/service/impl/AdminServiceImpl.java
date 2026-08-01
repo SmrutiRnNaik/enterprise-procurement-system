@@ -1,6 +1,7 @@
 package com.infosys.procurement.service.impl;
 
 import com.infosys.procurement.entity.Admin;
+import com.infosys.procurement.exception.InvalidCredentialsException;
 import com.infosys.procurement.repository.AdminRepository;
 import com.infosys.procurement.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,6 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository
                 .findByUsernameAndPassword(username, password)
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid admin credentials."));
+                        new InvalidCredentialsException("Invalid admin credentials."));
     }
 }

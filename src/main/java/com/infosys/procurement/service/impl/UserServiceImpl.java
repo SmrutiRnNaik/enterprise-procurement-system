@@ -1,6 +1,8 @@
 package com.infosys.procurement.service.impl;
 
 import com.infosys.procurement.entity.User;
+import com.infosys.procurement.exception.InvalidCredentialsException;
+import com.infosys.procurement.exception.UserAlreadyExistsException;
 import com.infosys.procurement.repository.UserRepository;
 import com.infosys.procurement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +18,15 @@ public class UserServiceImpl implements UserService {
     public User register(User user) {
 
         if (userRepository.existsByName(user.getName())) {
-            throw new RuntimeException("Username already exists.");
+            throw new UserAlreadyExistsException("Username already exists.");
         }
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already exists.");
+            throw new UserAlreadyExistsException("Email already exists.");
         }
 
         if (userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
-            throw new RuntimeException("Phone number already exists.");
+            throw new UserAlreadyExistsException("Phone number already exists.");
         }
 
         return userRepository.save(user);
@@ -35,6 +37,6 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findByNameAndPassword(name, password)
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid username or password."));
+                        new InvalidCredentialsException("Invalid username or password."));
     }
 }
