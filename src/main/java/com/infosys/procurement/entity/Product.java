@@ -1,6 +1,7 @@
 package com.infosys.procurement.entity;
 
 import com.infosys.procurement.enums.ProductStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"user", "department", "category"})
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
 public class Product {
 
     @Id
