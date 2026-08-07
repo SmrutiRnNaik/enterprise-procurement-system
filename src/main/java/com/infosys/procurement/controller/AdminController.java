@@ -1,11 +1,11 @@
 package com.infosys.procurement.controller;
 
 import com.infosys.procurement.dto.AdminLoginRequest;
-import com.infosys.procurement.entity.Admin;
-import com.infosys.procurement.service.AdminService;
 import com.infosys.procurement.entity.Product;
+import com.infosys.procurement.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -16,11 +16,13 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/login")
-    public Admin login(@RequestBody AdminLoginRequest request) {
+    public String login(@RequestBody AdminLoginRequest request) {
 
-        return adminService.login(
+        adminService.login(
                 request.getUsername(),
                 request.getPassword());
+
+        return "Admin logged in successfully.";
     }
 
     @GetMapping("/pending-requests")
