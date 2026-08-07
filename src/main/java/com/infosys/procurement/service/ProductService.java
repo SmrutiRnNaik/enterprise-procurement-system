@@ -1,10 +1,10 @@
 package com.infosys.procurement.service;
 
 import com.infosys.procurement.dto.ProductRequest;
-import com.infosys.procurement.entity.Product;
+import com.infosys.procurement.dto.RequestResponse;
 
 public interface ProductService {
 
-    Product raiseRequest(ProductRequest request);
+    RequestResponse raiseRequest(ProductRequest request);
 
 }

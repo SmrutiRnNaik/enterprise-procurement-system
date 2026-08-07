@@ -1,6 +1,8 @@
 package com.infosys.procurement.service.impl;
 
 import com.infosys.procurement.dto.ProductRequest;
+import com.infosys.procurement.dto.ProductResponse;
+import com.infosys.procurement.dto.RequestResponse;
 import com.infosys.procurement.entity.Admin;
 import com.infosys.procurement.entity.Category;
 import com.infosys.procurement.entity.Department;
@@ -43,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
     private EmailService emailService;
 
     @Override
-    public Product raiseRequest(ProductRequest request) {
+    public RequestResponse<ProductResponse> raiseRequest(ProductRequest request) {
 
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() ->
@@ -73,7 +75,6 @@ public class ProductServiceImpl implements ProductService {
         product.setTotalPrice(totalPrice);
 
         product.setStatus(ProductStatus.PENDING_APPROVAL);
-
         product.setCreatedDate(LocalDateTime.now());
         product.setUpdatedDate(LocalDateTime.now());
 
@@ -83,35 +84,30 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Admin not found."));
 
-        String subject = "New Procurement Request";
-
-        String body =
-                "Dear Admin,\n\n" +
-                        "A new procurement request has been submitted.\n\n" +
-
-                        "Product Name : " + savedProduct.getProductName() + "\n" +
-                        "Requested By : " + savedProduct.getUser().getName() + "\n" +
-                        "Department   : " + savedProduct.getDepartment().getDepartmentName() + "\n" +
-                        "Category     : " + savedProduct.getCategory().getCategoryName() + "\n" +
-                        "Quantity     : " + savedProduct.getQuantity() + "\n" +
-                        "Price        : ₹" + savedProduct.getPricePerProduct() + "\n" +
-                        "Total Price  : ₹" + savedProduct.getTotalPrice() + "\n\n" +
-
-                        "Please login to the Enterprise Procurement System to approve or reject this request.\n\n" +
-
-                        "Regards,\n" +
-                        "Enterprise Procurement System";
-
+        // Send notification email
         try {
-            emailService.sendEmail(
-                    admin.getEmail(),
-                    subject,
-                    body
-            );
+            emailService.sendNewRequestNotification(admin, savedProduct);
         } catch (Exception e) {
-            e.printStackTrace();
+            // Email failure should not stop request creation.
+            // Error is already logged in EmailServiceImpl.
         }
 
-        return savedProduct;
+        ProductResponse productResponse = ProductResponse.builder()
+                .productId(savedProduct.getProductId())
+                .productName(savedProduct.getProductName())
+                .requestedBy(savedProduct.getUser().getName())
+                .department(savedProduct.getDepartment().getDepartmentName())
+                .category(savedProduct.getCategory().getCategoryName())
+                .pricePerProduct(savedProduct.getPricePerProduct())
+                .quantity(savedProduct.getQuantity())
+                .totalPrice(savedProduct.getTotalPrice())
+                .status(savedProduct.getStatus())
+                .createdDate(savedProduct.getCreatedDate())
+                .build();
+
+        return new RequestResponse<>(
+                "Request submitted successfully.",
+                productResponse
+        );
     }
 }
