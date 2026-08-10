@@ -3,6 +3,7 @@ package com.infosys.procurement.controller;
 import com.infosys.procurement.dto.AdminLoginRequest;
 import com.infosys.procurement.dto.ProductResponse;
 import com.infosys.procurement.dto.RequestResponse;
+import com.infosys.procurement.dto.RequestStatusUpdate;
 import com.infosys.procurement.service.AdminService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,16 @@ public class AdminController {
     public RequestResponse<List<ProductResponse>> getPendingRequests() {
 
         return adminService.getPendingRequests();
+    }
 
+    @PutMapping("/requests/{productId}/status")
+    public RequestResponse<ProductResponse> updateRequestStatus(
+            @PathVariable Long productId,
+            @Valid @RequestBody RequestStatusUpdate request) {
+
+        return adminService.updateRequestStatus(
+                productId,
+                request.getStatus()
+        );
     }
 }

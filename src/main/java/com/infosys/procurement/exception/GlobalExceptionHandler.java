@@ -14,21 +14,27 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInvalidCredentials(
             InvalidCredentialsException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> handleUserAlreadyExists(
             UserAlreadyExistsException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFound(
             ResourceNotFoundException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,6 +47,15 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(
                 fieldError.getDefaultMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidRequestStatusException.class)
+    public ResponseEntity<String> handleInvalidRequestStatus(
+            InvalidRequestStatusException ex) {
+
+        return new ResponseEntity<>(
+                ex.getMessage(),
                 HttpStatus.BAD_REQUEST);
     }
 

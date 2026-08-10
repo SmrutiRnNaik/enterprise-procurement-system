@@ -2,7 +2,9 @@ package com.infosys.procurement.service;
 
 import com.infosys.procurement.dto.ProductResponse;
 import com.infosys.procurement.dto.RequestResponse;
+import com.infosys.procurement.dto.RequestStatusUpdate;
 import com.infosys.procurement.entity.Admin;
+import com.infosys.procurement.enums.ProductStatus;
 
 import java.util.List;
 
@@ -12,4 +14,8 @@ public interface AdminService {
 
     RequestResponse<List<ProductResponse>> getPendingRequests();
 
+    RequestResponse<ProductResponse> updateRequestStatus(
+            Long productId,
+            ProductStatus status
+    );
 }

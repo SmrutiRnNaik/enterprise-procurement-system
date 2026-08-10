@@ -2,6 +2,7 @@ package com.infosys.procurement.service.impl;
 
 import com.infosys.procurement.entity.Admin;
 import com.infosys.procurement.entity.Product;
+import com.infosys.procurement.enums.ProductStatus;
 import com.infosys.procurement.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,47 @@ public class EmailServiceImpl implements EmailService {
 
         sendEmail(
                 admin.getEmail(),
+                subject,
+                body
+        );
+    }
+
+    @Override
+    public void sendRequestStatusNotification(Product product) {
+
+        String statusMessage;
+
+        if (product.getStatus() == ProductStatus.APPROVED) {
+            statusMessage = "Your procurement request has been approved.";
+        } else {
+            statusMessage = "Your procurement request has been rejected.";
+        }
+
+        String subject =
+                "Procurement Request " + product.getStatus();
+
+        String body =
+                "Dear " + product.getUser().getName() + ",\n\n" +
+
+                        statusMessage + "\n\n" +
+
+                        "Request Details:\n\n" +
+
+                        "Product Name : " + product.getProductName() + "\n" +
+                        "Department   : " +
+                        product.getDepartment().getDepartmentName() + "\n" +
+                        "Category     : " +
+                        product.getCategory().getCategoryName() + "\n" +
+                        "Quantity     : " + product.getQuantity() + "\n" +
+                        "Price        : ₹" + product.getPricePerProduct() + "\n" +
+                        "Total Price  : ₹" + product.getTotalPrice() + "\n" +
+                        "Status       : " + product.getStatus() + "\n\n" +
+
+                        "Regards,\n" +
+                        "Enterprise Procurement System";
+
+        sendEmail(
+                product.getUser().getEmail(),
                 subject,
                 body
         );

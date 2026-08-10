@@ -9,4 +9,5 @@ public interface EmailService {
 
     void sendNewRequestNotification(Admin admin, Product product);
 
+    void sendRequestStatusNotification(Product product);
 }
