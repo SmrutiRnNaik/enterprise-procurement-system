@@ -10,6 +10,15 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findByStatusOrderByCreatedDateDesc(ProductStatus status);
+    List<Product> findByStatusOrderByCreatedDateDesc(
+            ProductStatus status
+    );
 
+    List<Product> findByUser_UserIdOrderByCreatedDateDesc(
+            Long userId
+    );
+
+    List<Product> findByStatusInOrderByUpdatedDateDesc(
+            List<ProductStatus> statuses
+    );
 }
