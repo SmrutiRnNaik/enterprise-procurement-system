@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "product")
+@ToString(exclude = "category")
 public class Supplier {
 
     @Id
@@ -22,8 +22,8 @@ public class Supplier {
     private Long supplierId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(name = "supplier_name",
             nullable = false,
