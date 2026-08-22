@@ -21,4 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStatusInOrderByUpdatedDateDesc(
             List<ProductStatus> statuses
     );
+
+    Long countByUser_UserId(Long userId);
+
+    Long countByUser_UserIdAndStatus(Long userId, ProductStatus status);
 }
