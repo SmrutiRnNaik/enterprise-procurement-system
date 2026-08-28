@@ -1,24 +1,47 @@
 function StatsCard({ title, value, icon, color }) {
 
+    const colorClass = `stats-${color}`;
+
+    const descriptions = {
+        primary: "All procurement requests",
+        warning: "Awaiting approval",
+        success: "Successfully approved",
+        danger: "Requests declined"
+    };
+
     return (
 
-        <div className="card border-0 shadow-sm h-100">
+        <div className={`stats-card ${colorClass}`}>
 
-            <div className="card-body">
+            <div className="stats-card-top">
 
-                <div className="d-flex justify-content-between align-items-center">
+                <div className="stats-card-icon">
 
-                    <div>
-
-                        <p className="text-muted mb-1">{title}</p>
-
-                        <h3 className="fw-bold mb-0">{value}</h3>
-
-                    </div>
-
-                    <i className={`bi bi-${icon} fs-1 text-${color}`}></i>
+                    <i className={`bi bi-${icon}`}></i>
 
                 </div>
+
+                <span className="stats-card-label">
+                    {title}
+                </span>
+
+            </div>
+
+
+            <div className="stats-card-value">
+
+                {value}
+
+            </div>
+
+
+            <div className="stats-card-bottom">
+
+                <span>
+                    {descriptions[color] || "Procurement activity"}
+                </span>
+
+                <i className="bi bi-arrow-up-right"></i>
 
             </div>
 

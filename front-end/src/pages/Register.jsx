@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Swal from "sweetalert2";
-import { registerUser, getDepartments } from "../services/authService";
+
+import {
+    registerUser,
+    getDepartments
+} from "../services/authService";
+
+import {
+    showSuccess,
+    showError
+} from "../utils/notifications";
+
+import registerImage from "../assets/register.png";
 
 function Register() {
 
@@ -18,24 +28,51 @@ function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
+
+    /* =========================================================
+       DESIGNATIONS
+       ========================================================= */
+
+    const designations = [
+        "Developer",
+        "Software Engineer",
+        "Senior Software Engineer",
+        "Technical Lead",
+        "Project Manager",
+        "Business Analyst",
+        "HR Executive",
+        "Accountant",
+        "Finance Manager",
+        "Procurement Executive"
+    ];
+
+
+    /* =========================================================
+       FETCH DEPARTMENTS
+       ========================================================= */
+
     useEffect(() => {
 
         const fetchDepartments = async () => {
 
             try {
 
-                const response = await getDepartments();
+                const response =
+                    await getDepartments();
+
                 setDepartments(response.data);
 
             } catch (error) {
 
-                console.error("Failed to load departments", error);
+                console.error(
+                    "Failed to load departments",
+                    error
+                );
 
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Unable to load departments."
-                });
+                showError(
+                    "Unable to Load Departments",
+                    "Please refresh the page and try again."
+                );
 
             }
 
@@ -45,26 +82,53 @@ function Register() {
 
     }, []);
 
+
+    /* =========================================================
+       FORM CHANGE
+       ========================================================= */
+
     const handleChange = (e) => {
 
         const { name, value } = e.target;
 
         setForm({
             ...form,
-            [name]: name === "departmentId" ? Number(value) : value
+            [name]:
+                name === "departmentId"
+                    ? Number(value)
+                    : value
         });
 
     };
+
+
+    /* =========================================================
+       PASSWORD STRENGTH
+       ========================================================= */
 
     const getPasswordStrength = () => {
 
         const password = form.password;
 
-        if (password.length === 0)
-            return { text: "", color: "", width: "0%" };
+        if (password.length === 0) {
 
-        if (password.length < 6)
-            return { text: "Weak", color: "danger", width: "33%" };
+            return {
+                text: "",
+                color: "",
+                width: "0%"
+            };
+
+        }
+
+        if (password.length < 6) {
+
+            return {
+                text: "Weak",
+                color: "danger",
+                width: "33%"
+            };
+
+        }
 
         if (
             password.length >= 8 &&
@@ -72,41 +136,69 @@ function Register() {
             /[0-9]/.test(password) &&
             /[^A-Za-z0-9]/.test(password)
         ) {
-            return { text: "Strong", color: "success", width: "100%" };
+
+            return {
+                text: "Strong",
+                color: "success",
+                width: "100%"
+            };
+
         }
 
-        return { text: "Medium", color: "warning", width: "66%" };
+        return {
+            text: "Medium",
+            color: "warning",
+            width: "66%"
+        };
 
     };
 
-    const strength = getPasswordStrength();
+
+    const strength =
+        getPasswordStrength();
+
+
+    /* =========================================================
+       REGISTER
+       ========================================================= */
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
+
         setLoading(true);
 
         try {
 
             const payload = {
+
                 name: form.name,
+
                 password: form.password,
+
                 phoneNumber: form.phoneNumber,
+
                 email: form.email,
+
                 designation: form.designation,
+
                 department: {
                     departmentId: form.departmentId
                 }
+
             };
 
-            const response = await registerUser(payload);
 
-            Swal.fire({
-                icon: "success",
-                title: "Registration Successful",
-                text: response.data || "User registered successfully.",
-                confirmButtonColor: "#0d6efd"
-            });
+            const response =
+                await registerUser(payload);
+
+
+            showSuccess(
+                "Registration Successful",
+                response.data ||
+                "User registered successfully."
+            );
+
 
             setForm({
                 name: "",
@@ -117,6 +209,7 @@ function Register() {
                 departmentId: ""
             });
 
+
         } catch (error) {
 
             const message =
@@ -125,12 +218,11 @@ function Register() {
                 error.message ||
                 "Something went wrong.";
 
-            Swal.fire({
-                icon: "error",
-                title: "Registration Failed",
-                text: message,
-                confirmButtonColor: "#0d6efd"
-            });
+
+            showError(
+                "Registration Failed",
+                message
+            );
 
         } finally {
 
@@ -140,236 +232,376 @@ function Register() {
 
     };
 
+
     return (
 
-        <div className="registration-page">
+        <div className="auth-page register-page">
 
-            <div className="card registration-card">
+            <div className="register-container">
 
-                <div className="card-body p-4">
+                {/* LEFT IMAGE PANEL */}
 
-                    <div className="text-center mb-4">
+                <section className="register-visual">
 
-                        <div className="registration-logo">
-                            <i className="bi bi-building registration-icon"></i>
-                        </div>
+                    <img
+                        src={registerImage}
+                        alt="InfyProcure"
+                        className="register-image"
+                    />
 
-                        <h3 className="fw-bold mt-3 mb-1">
-                            Enterprise Procurement System
-                        </h3>
+                    <div className="register-visual-overlay"></div>
 
-                        <p className="text-muted mb-0">
-                            Employee Registration Portal
-                        </p>
+                </section>
 
-                    </div>
 
-                    <form onSubmit={handleSubmit}>
+                {/* RIGHT FORM PANEL */}
 
-                        <div className="mb-3">
+                <section className="register-form-panel">
 
-                            <label className="form-label fw-semibold">
-                                Full Name
-                            </label>
+                    <div className="register-form-wrapper">
 
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="name"
-                                value={form.name}
-                                onChange={handleChange}
-                                placeholder="Enter your full name"
-                                required
-                            />
+                        <div className="register-form-header">
 
-                        </div>
+                            <div className="mobile-auth-brand">
 
-                        <div className="mb-3">
+                                <div className="auth-logo">
+                                    IP
+                                </div>
 
-                            <label className="form-label fw-semibold">
-                                Email Address
-                            </label>
+                                <span>
+                                    INFYPROCURE
+                                </span>
 
-                            <input
-                                type="email"
-                                className="form-control"
-                                name="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                placeholder="name@company.com"
-                                required
-                            />
+                            </div>
+
+                            <span className="form-step">
+                                STEP 1 OF 1
+                            </span>
+
+                            <h2>
+                                Create your account
+                            </h2>
+
+                            <p>
+                                Enter your details to get started
+                                with InfyProcure.
+                            </p>
 
                         </div>
 
-                        <div className="mb-3">
 
-                            <label className="form-label fw-semibold">
-                                Phone Number
-                            </label>
+                        <form onSubmit={handleSubmit}>
 
-                            <input
-                                type="tel"
-                                className="form-control"
-                                name="phoneNumber"
-                                value={form.phoneNumber}
-                                onChange={handleChange}
-                                placeholder="Enter 10-digit phone number"
-                                maxLength={10}
-                                pattern="[6-9][0-9]{9}"
-                                required
-                            />
+                            {/* Full Name */}
 
-                        </div>
+                            <div className="auth-field">
 
-                        <div className="mb-3">
-
-                            <label className="form-label fw-semibold">
-                                Designation
-                            </label>
-
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="designation"
-                                value={form.designation}
-                                onChange={handleChange}
-                                placeholder="Enter your designation"
-                                required
-                            />
-
-                        </div>
-
-                        <div className="mb-3">
-
-                            <label className="form-label fw-semibold">
-                                Department
-                            </label>
-
-                            <select
-                                className="form-select"
-                                name="departmentId"
-                                value={form.departmentId}
-                                onChange={handleChange}
-                                required
-                            >
-
-                                <option value="">Select Department</option>
-
-                                {departments.map((dept) => (
-
-                                    <option
-                                        key={dept.departmentId}
-                                        value={dept.departmentId}
-                                    >
-                                        {dept.departmentName}
-                                    </option>
-
-                                ))}
-
-                            </select>
-
-                        </div>
-
-                        <div className="mb-2">
-
-                            <label className="form-label fw-semibold">
-                                Password
-                            </label>
-
-                            <div className="input-group">
+                                <label htmlFor="name">
+                                    Full Name
+                                </label>
 
                                 <input
-                                    type={showPassword ? "text" : "password"}
-                                    className="form-control"
-                                    name="password"
-                                    value={form.password}
+                                    id="name"
+                                    type="text"
+                                    name="name"
+                                    value={form.name}
                                     onChange={handleChange}
-                                    placeholder="Create a secure password"
+                                    placeholder="Enter your full name"
+                                    autoComplete="name"
                                     required
                                 />
 
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary"
-                                    onClick={() =>
-                                        setShowPassword(!showPassword)
-                                    }
-                                >
+                            </div>
 
-                                    <i
-                                        className={
-                                            showPassword
-                                                ? "bi bi-eye-slash"
-                                                : "bi bi-eye"
-                                        }
-                                    ></i>
 
-                                </button>
+                            {/* Email */}
+
+                            <div className="auth-field">
+
+                                <label htmlFor="email">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    placeholder="name@company.com"
+                                    autoComplete="email"
+                                    required
+                                />
 
                             </div>
 
-                        </div>
 
-                        {strength.text && (
-                            <div className="mb-4">
+                            {/* Phone */}
 
-                                <div
-                                    className="progress"
-                                    style={{ height: "6px" }}
+                            <div className="auth-field">
+
+                                <label htmlFor="phoneNumber">
+                                    Phone Number
+                                </label>
+
+                                <input
+                                    id="phoneNumber"
+                                    type="tel"
+                                    name="phoneNumber"
+                                    value={form.phoneNumber}
+                                    onChange={handleChange}
+                                    placeholder="10-digit number"
+                                    maxLength={10}
+                                    pattern="[6-9][0-9]{9}"
+                                    autoComplete="tel"
+                                    required
+                                />
+
+                            </div>
+
+
+                            {/* Department */}
+
+                            <div className="auth-field">
+
+                                <label htmlFor="departmentId">
+                                    Department
+                                </label>
+
+                                <select
+                                    id="departmentId"
+                                    name="departmentId"
+                                    value={form.departmentId}
+                                    onChange={handleChange}
+                                    required
                                 >
 
-                                    <div
-                                        className={`progress-bar bg-${strength.color}`}
-                                        style={{ width: strength.width }}
-                                    ></div>
+                                    <option value="">
+                                        Select your department
+                                    </option>
+
+                                    {departments.map(
+                                        (dept) => (
+
+                                            <option
+                                                key={
+                                                    dept.departmentId
+                                                }
+                                                value={
+                                                    dept.departmentId
+                                                }
+                                            >
+
+                                                {
+                                                    dept.departmentName
+                                                }
+
+                                            </option>
+
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+
+                            {/* Designation */}
+
+                            <div className="auth-field">
+
+                                <label htmlFor="designation">
+                                    Designation
+                                </label>
+
+                                <select
+                                    id="designation"
+                                    name="designation"
+                                    value={form.designation}
+                                    onChange={handleChange}
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select your designation
+                                    </option>
+
+                                    {designations.map(
+                                        (designation) => (
+
+                                            <option
+                                                key={designation}
+                                                value={designation}
+                                            >
+
+                                                {designation}
+
+                                            </option>
+
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+
+                            {/* Password */}
+
+                            <div className="auth-field">
+
+                                <label htmlFor="password">
+                                    Password
+                                </label>
+
+                                <div className="auth-password-wrapper">
+
+                                    <input
+                                        id="password"
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        name="password"
+                                        value={form.password}
+                                        onChange={handleChange}
+                                        placeholder="Create a secure password"
+                                        autoComplete="new-password"
+                                        required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() =>
+                                            setShowPassword(
+                                                !showPassword
+                                            )
+                                        }
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                    >
+
+                                        <i
+                                            className={
+                                                showPassword
+                                                    ? "bi bi-eye-slash"
+                                                    : "bi bi-eye"
+                                            }
+                                        ></i>
+
+                                    </button>
 
                                 </div>
 
-                                <small className={`text-${strength.color}`}>
-                                    Password Strength: {strength.text}
-                                </small>
-
                             </div>
-                        )}
 
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100 py-2 fw-semibold"
-                            disabled={loading}
-                        >
 
-                            {loading ? (
-                                <>
+                            {/* Password Strength */}
+
+                            {strength.text && (
+
+                                <div className="password-strength">
+
+                                    <div className="password-strength-track">
+
+                                        <div
+                                            className={`password-strength-bar strength-${strength.color}`}
+                                            style={{
+                                                width:
+                                                    strength.width
+                                            }}
+                                        ></div>
+
+                                    </div>
+
                                     <span
-                                        className="spinner-border spinner-border-sm me-2"
-                                        role="status"
-                                    ></span>
-                                    Registering...
-                                </>
-                            ) : (
-                                "Register"
+                                        className={`strength-text strength-${strength.color}-text`}
+                                    >
+
+                                        Password strength:{" "}
+                                        {strength.text}
+
+                                    </span>
+
+                                </div>
+
                             )}
 
-                        </button>
 
-                    </form>
+                            {/* Submit */}
 
-                    <hr className="my-4" />
+                            <button
+                                type="submit"
+                                className="register-submit"
+                                disabled={loading}
+                            >
 
-                    <p className="text-center text-muted mb-0">
-                        Already have an account?
+                                {loading ? (
+
+                                    <>
+                                        <span
+                                            className="spinner-border spinner-border-sm me-2"
+                                            role="status"
+                                        ></span>
+
+                                        Creating Account...
+                                    </>
+
+                                ) : (
+
+                                    <>
+                                        Create Account
+
+                                        <i className="bi bi-arrow-right ms-2"></i>
+                                    </>
+
+                                )}
+
+                            </button>
+
+
+                            {/* Terms */}
+
+                            <p className="auth-terms">
+
+                                By creating an account, you agree to
+                                our Terms of Service and Privacy Policy.
+
+                            </p>
+
+                        </form>
+
+
+                        {/* Login Link */}
+
+                        <div className="auth-divider">
+
+                            <span>
+                                Already registered?
+                            </span>
+
+                        </div>
+
 
                         <Link
                             to="/login"
-                            className="text-decoration-none ms-1 fw-semibold"
+                            className="register-login-link"
                         >
-                            Sign In
+
+                            Sign in to your account
+
+                            <i className="bi bi-arrow-right"></i>
+
                         </Link>
 
-                    </p>
+                    </div>
 
-                </div>
+                </section>
 
             </div>
 

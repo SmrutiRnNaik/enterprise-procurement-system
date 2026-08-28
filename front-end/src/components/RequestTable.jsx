@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { getRequestHistory } from "../services/dashboardService";
 
-function RequestTable() {
+function RequestTable({ limit, showHeader = true }) {
+
+    const navigate = useNavigate();
 
     const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
 
@@ -11,12 +16,27 @@ function RequestTable() {
 
             try {
 
-                const response = await getRequestHistory(1);
-                setRequests(response.data.data);
+                const userId = localStorage.getItem("userId");
+
+                if (!userId) {
+                    console.error("User ID not found.");
+                    return;
+                }
+
+                const response = await getRequestHistory(userId);
+
+                setRequests(response.data.data || []);
 
             } catch (error) {
 
-                console.error("Failed to load request history", error);
+                console.error(
+                    "Failed to load request history",
+                    error
+                );
+
+            } finally {
+
+                setLoading(false);
 
             }
 
@@ -25,6 +45,7 @@ function RequestTable() {
         fetchRequests();
 
     }, []);
+
 
     const getBadge = (status) => {
 
@@ -46,79 +67,266 @@ function RequestTable() {
 
     };
 
+
+    const formatStatus = (status) => {
+
+        switch (status) {
+
+            case "PENDING_APPROVAL":
+                return "Pending Approval";
+
+            case "APPROVED":
+                return "Approved";
+
+            case "REJECTED":
+                return "Rejected";
+
+            default:
+                return status;
+
+        }
+
+    };
+
+
+    const displayedRequests = limit
+        ? requests.slice(0, limit)
+        : requests;
+
+
+    if (loading) {
+
+        return (
+
+            <div className="card border-0 shadow-sm">
+
+                <div className="card-body text-center py-5">
+
+                    <div
+                        className="spinner-border"
+                        role="status"
+                    ></div>
+
+                    <p className="text-muted mt-3 mb-0">
+                        Loading requests...
+                    </p>
+
+                </div>
+
+            </div>
+
+        );
+
+    }
+
+
     return (
 
         <div className="card border-0 shadow-sm">
 
             <div className="card-body">
 
-                <div className="d-flex justify-content-between align-items-center mb-3">
 
-                    <h5 className="fw-bold mb-0">
-                        Request History
-                    </h5>
+                {/* =================================================
+                    OPTIONAL HEADER
 
-                    <small className="text-muted">
-                        {requests.length} Requests
-                    </small>
+                    Hidden on Dashboard because Dashboard
+                    already provides the Recent Requests header.
+                ================================================= */}
 
-                </div>
+                {showHeader && (
 
-                <div className="table-responsive">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
 
-                    <table className="table table-hover align-middle">
+                        <div>
 
-                        <thead className="table-light">
+                            <h5 className="fw-bold mb-1">
+                                {limit
+                                    ? "Recent Requests"
+                                    : "Request History"
+                                }
+                            </h5>
 
-                            <tr>
-                                <th>ID</th>
-                                <th>Product</th>
-                                <th>Department</th>
-                                <th>Quantity</th>
-                                <th>Total Price</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
+                            <p className="text-muted small mb-0">
 
-                        </thead>
+                                {limit
+                                    ? "Your latest procurement requests"
+                                    : "Complete history of your procurement requests"
+                                }
 
-                        <tbody>
+                            </p>
 
-                            {requests.map((request) => (
+                        </div>
 
-                                <tr key={request.productId}>
 
-                                    <td>#{request.productId}</td>
+                        <div className="d-flex align-items-center gap-3">
 
-                                    <td>{request.productName}</td>
+                            <small className="text-muted">
+                                {requests.length} Requests
+                            </small>
 
-                                    <td>{request.department}</td>
 
-                                    <td>{request.quantity}</td>
+                            {limit && requests.length > 0 && (
 
-                                    <td>₹{request.totalPrice.toLocaleString()}</td>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-dark"
+                                    onClick={() =>
+                                        navigate("/request-history")
+                                    }
+                                >
 
-                                    <td>
+                                    View Full History
 
-                                        <span className={`badge bg-${getBadge(request.status)}`}>
-                                            {request.status.replace("_", " ")}
-                                        </span>
+                                    <i className="bi bi-arrow-right ms-2"></i>
 
-                                    </td>
+                                </button>
 
-                                    <td>
-                                        {new Date(request.createdDate).toLocaleDateString()}
-                                    </td>
+                            )}
+
+                        </div>
+
+                    </div>
+
+                )}
+
+
+                {/* =================================================
+                    EMPTY STATE
+                ================================================= */}
+
+                {displayedRequests.length === 0 ? (
+
+                    <div className="request-empty-state">
+
+                        <div className="request-empty-icon">
+
+                            <i className="bi bi-inbox"></i>
+
+                        </div>
+
+                        <h6 className="fw-bold mt-3">
+                            No requests yet
+                        </h6>
+
+                        <p className="text-muted mb-3">
+                            You haven't raised any procurement requests.
+                        </p>
+
+
+                        {limit && (
+
+                            <button
+                                type="button"
+                                className="btn btn-dark"
+                                onClick={() =>
+                                    navigate("/raise-request")
+                                }
+                            >
+
+                                <i className="bi bi-plus-lg me-2"></i>
+
+                                Raise Your First Request
+
+                            </button>
+
+                        )}
+
+                    </div>
+
+                ) : (
+
+                    <div className="table-responsive">
+
+                        <table className="table table-hover align-middle mb-0">
+
+                            <thead className="table-light">
+
+                                <tr>
+
+                                    <th>ID</th>
+
+                                    <th>Product</th>
+
+                                    <th>Department</th>
+
+                                    <th>Quantity</th>
+
+                                    <th>Total Price</th>
+
+                                    <th>Status</th>
+
+                                    <th>Date</th>
 
                                 </tr>
 
-                            ))}
+                            </thead>
 
-                        </tbody>
 
-                    </table>
+                            <tbody>
 
-                </div>
+                                {displayedRequests.map((request) => (
+
+                                    <tr key={request.productId}>
+
+                                        <td>
+                                            #{request.productId}
+                                        </td>
+
+                                        <td className="fw-semibold">
+                                            {request.productName}
+                                        </td>
+
+                                        <td>
+                                            {request.department}
+                                        </td>
+
+                                        <td>
+                                            {request.quantity}
+                                        </td>
+
+                                        <td>
+                                            ₹
+                                            {Number(
+                                                request.totalPrice
+                                            ).toLocaleString("en-IN")}
+                                        </td>
+
+                                        <td>
+
+                                            <span
+                                                className={`badge bg-${getBadge(
+                                                    request.status
+                                                )}`}
+                                            >
+                                                {formatStatus(
+                                                    request.status
+                                                )}
+                                            </span>
+
+                                        </td>
+
+                                        <td>
+
+                                            {new Date(
+                                                request.createdDate
+                                            ).toLocaleDateString(
+                                                "en-IN"
+                                            )}
+
+                                        </td>
+
+                                    </tr>
+
+                                ))}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                )}
 
             </div>
 

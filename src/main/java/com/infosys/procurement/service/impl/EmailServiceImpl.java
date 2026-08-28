@@ -8,8 +8,10 @@ import com.infosys.procurement.entity.Supplier;
 import com.infosys.procurement.enums.ProductStatus;
 import com.infosys.procurement.repository.AdminRepository;
 import com.infosys.procurement.service.EmailService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,12 +29,21 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private AdminRepository adminRepository;
 
+
+    /* =========================================================
+       SEND EMAIL
+       ========================================================= */
+
     @Override
-    public void sendEmail(String to, String subject, String body) {
+    public void sendEmail(
+            String to,
+            String subject,
+            String body) {
 
         try {
 
-            SimpleMailMessage message = new SimpleMailMessage();
+            SimpleMailMessage message =
+                    new SimpleMailMessage();
 
             message.setTo(to);
             message.setSubject(subject);
@@ -40,189 +51,374 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(message);
 
-            logger.info("Email sent successfully to {}", to);
+            logger.info(
+                    "Email sent successfully to {}",
+                    to
+            );
 
         } catch (Exception e) {
 
-            logger.error("Failed to send email to {}", to, e);
+            logger.error(
+                    "Failed to send email to {}",
+                    to,
+                    e
+            );
 
             throw e;
         }
     }
 
-    @Override
-    public void sendNewRequestNotification(Admin admin, Product product) {
 
-        String subject = "New Procurement Request";
+    /* =========================================================
+       NEW PROCUREMENT REQUEST → ADMIN
+       ========================================================= */
+
+    @Override
+    public void sendNewRequestNotification(
+            Admin admin,
+            Product product) {
+
+        String subject =
+                "Procurement Request Pending Approval - "
+                        + product.getProductName();
 
         String body =
                 "Dear Admin,\n\n" +
-                        "A new procurement request has been submitted.\n\n" +
 
-                        "Product Name : " + product.getProductName() + "\n" +
-                        "Requested By : " + product.getUser().getName() + "\n" +
-                        "Department   : " + product.getDepartment().getDepartmentName() + "\n" +
-                        "Category     : " + product.getCategory().getCategoryName() + "\n" +
-                        "Quantity     : " + product.getQuantity() + "\n" +
-                        "Price        : ₹" + product.getPricePerProduct() + "\n" +
-                        "Total Price  : ₹" + product.getTotalPrice() + "\n\n" +
+                        "A new procurement request has been submitted " +
+                        "and is awaiting your review.\n\n" +
 
-                        "Please login to the Enterprise Procurement System to approve or reject this request.\n\n" +
+                        "Request Details\n" +
+                        "------------------------------\n" +
+
+                        "Product        : " +
+                        product.getProductName() + "\n" +
+
+                        "Requested By   : " +
+                        product.getUser().getName() + "\n" +
+
+                        "Department     : " +
+                        product.getDepartment().getDepartmentName() + "\n" +
+
+                        "Category       : " +
+                        product.getCategory().getCategoryName() + "\n" +
+
+                        "Quantity       : " +
+                        product.getQuantity() + "\n" +
+
+                        "Unit Price     : ₹" +
+                        product.getPricePerProduct() + "\n" +
+
+                        "Total Amount   : ₹" +
+                        product.getTotalPrice() + "\n" +
+
+                        "------------------------------\n\n" +
+
+                        "Please log in to the Enterprise Procurement System " +
+                        "to review this request and take the appropriate " +
+                        "action by approving or rejecting it.\n\n" +
 
                         "Regards,\n" +
-                        "Enterprise Procurement System";
+                        "InfyProcure";
 
-        sendEmail(admin.getEmail(), subject, body);
+        sendEmail(
+                admin.getEmail(),
+                subject,
+                body
+        );
     }
 
+
+    /* =========================================================
+       REQUEST STATUS → USER
+       ========================================================= */
+
     @Override
-    public void sendRequestStatusNotification(Product product) {
+    public void sendRequestStatusNotification(
+            Product product) {
 
         String statusMessage;
 
-        if (product.getStatus() == ProductStatus.APPROVED) {
-            statusMessage = "Your procurement request has been approved.";
+        if (product.getStatus() ==
+                ProductStatus.APPROVED) {
+
+            statusMessage =
+                    "Your procurement request has been approved.";
+
         } else {
-            statusMessage = "Your procurement request has been rejected.";
+
+            statusMessage =
+                    "Your procurement request has been rejected.";
         }
 
+
         String subject =
-                "Procurement Request " + product.getStatus();
+                "Procurement Request "
+                        + product.getStatus();
+
 
         String body =
-                "Dear " + product.getUser().getName() + ",\n\n" +
+                "Dear " +
+                        product.getUser().getName() +
+                        ",\n\n" +
 
-                        statusMessage + "\n\n" +
+                        statusMessage +
+                        "\n\n" +
 
-                        "Request Details:\n\n" +
+                        "Request Details\n" +
+                        "------------------------------\n" +
 
-                        "Product Name : " + product.getProductName() + "\n" +
-                        "Department   : " +
-                        product.getDepartment().getDepartmentName() + "\n" +
-                        "Category     : " +
-                        product.getCategory().getCategoryName() + "\n" +
-                        "Quantity     : " + product.getQuantity() + "\n" +
-                        "Price        : ₹" + product.getPricePerProduct() + "\n" +
-                        "Total Price  : ₹" + product.getTotalPrice() + "\n" +
-                        "Status       : " + product.getStatus() + "\n\n" +
+                        "Product        : " +
+                        product.getProductName() + "\n" +
+
+                        "Department     : " +
+                        product.getDepartment().getDepartmentName() +
+                        "\n" +
+
+                        "Category       : " +
+                        product.getCategory().getCategoryName() +
+                        "\n" +
+
+                        "Quantity       : " +
+                        product.getQuantity() + "\n" +
+
+                        "Unit Price     : ₹" +
+                        product.getPricePerProduct() + "\n" +
+
+                        "Total Amount   : ₹" +
+                        product.getTotalPrice() + "\n" +
+
+                        "Status         : " +
+                        product.getStatus() + "\n\n" +
 
                         "Regards,\n" +
-                        "Enterprise Procurement System";
+                        "InfyProcure";
 
-        sendEmail(product.getUser().getEmail(), subject, body);
+
+        sendEmail(
+                product.getUser().getEmail(),
+                subject,
+                body
+        );
     }
+
+
+    /* =========================================================
+       PAYMENT COMPLETED → ADMIN
+       ========================================================= */
 
     @Override
     public void sendPaymentConfirmationToAdmin(
             Admin admin,
             Payment payment) {
 
-        String subject = "Payment Completed - " +
-                payment.getProduct().getProductName();
+        String subject =
+                "Payment Completed - " +
+                        payment.getProduct().getProductName();
+
 
         String body =
                 "Dear Admin,\n\n" +
 
                         "Payment has been completed successfully.\n\n" +
 
-                        "Payment Details:\n\n" +
+                        "Payment Details\n" +
+                        "------------------------------\n" +
 
                         "Product Name          : " +
-                        payment.getProduct().getProductName() + "\n" +
+                        payment.getProduct().getProductName() +
+                        "\n" +
+
                         "Supplier              : " +
-                        payment.getSupplier().getSupplierName() + "\n" +
+                        payment.getSupplier().getSupplierName() +
+                        "\n" +
+
                         "Amount                : ₹" +
-                        payment.getAmount() + "\n" +
+                        payment.getAmount() +
+                        "\n" +
+
                         "Payment Mode          : " +
-                        payment.getPaymentMode() + "\n" +
+                        payment.getPaymentMode() +
+                        "\n" +
+
                         "Transaction Reference : " +
-                        payment.getTransactionReference() + "\n" +
+                        payment.getTransactionReference() +
+                        "\n" +
+
                         "Payment Date          : " +
-                        payment.getPaymentDate() + "\n\n" +
+                        payment.getPaymentDate() +
+                        "\n\n" +
 
                         "Regards,\n" +
-                        "Enterprise Procurement System";
+                        "InfyProcure";
 
-        sendEmail(admin.getEmail(), subject, body);
+
+        sendEmail(
+                admin.getEmail(),
+                subject,
+                body
+        );
     }
+
+
+    /* =========================================================
+       PAYMENT COMPLETED → SUPPLIER
+       ========================================================= */
 
     @Override
     public void sendPaymentConfirmationToSupplier(
             Supplier supplier,
             Payment payment) {
 
-        String subject = "Payment Received - " +
-                payment.getProduct().getProductName();
+        String subject =
+                "Payment Received - " +
+                        payment.getProduct().getProductName();
+
 
         String body =
-                "Dear " + supplier.getSupplierName() + ",\n\n" +
+                "Dear " +
+                        supplier.getSupplierName() +
+                        ",\n\n" +
 
                         "Payment has been received successfully.\n\n" +
 
-                        "Payment Details:\n\n" +
+                        "Payment Details\n" +
+                        "------------------------------\n" +
 
                         "Product Name          : " +
-                        payment.getProduct().getProductName() + "\n" +
+                        payment.getProduct().getProductName() +
+                        "\n" +
+
                         "Amount                : ₹" +
-                        payment.getAmount() + "\n" +
+                        payment.getAmount() +
+                        "\n" +
+
                         "Payment Mode          : " +
-                        payment.getPaymentMode() + "\n" +
+                        payment.getPaymentMode() +
+                        "\n" +
+
                         "Transaction Reference : " +
-                        payment.getTransactionReference() + "\n" +
+                        payment.getTransactionReference() +
+                        "\n" +
+
                         "Payment Date          : " +
-                        payment.getPaymentDate() + "\n\n" +
+                        payment.getPaymentDate() +
+                        "\n\n" +
 
                         "You may now proceed with preparing the order.\n\n" +
 
                         "Regards,\n" +
-                        "Enterprise Procurement System";
+                        "InfyProcure";
 
-        sendEmail(supplier.getEmail(), subject, body);
+
+        sendEmail(
+                supplier.getEmail(),
+                subject,
+                body
+        );
     }
+
+
+    /* =========================================================
+       ORDER STATUS → USER / ADMIN / SUPPLIER
+       ========================================================= */
 
     @Override
     public void sendOrderTrackingNotification(
             OrderTracking orderTracking) {
 
-        String status = orderTracking.getOrderStatus().name().replace("_", " ");
+        String status =
+                orderTracking
+                        .getOrderStatus()
+                        .name()
+                        .replace("_", " ");
 
-        String subject = "Order Status Updated - " + status;
+
+        String subject =
+                "Order Status Updated - " +
+                        status;
+
 
         String body =
                 "Order Status Update\n\n" +
 
                         "Product Name : " +
-                        orderTracking.getProduct().getProductName() + "\n" +
+                        orderTracking
+                                .getProduct()
+                                .getProductName() +
+                        "\n" +
+
                         "Supplier     : " +
-                        orderTracking.getSupplier().getSupplierName() + "\n" +
-                        "Status       : " + status + "\n\n" +
+                        orderTracking
+                                .getSupplier()
+                                .getSupplierName() +
+                        "\n" +
+
+                        "Status       : " +
+                        status +
+                        "\n\n" +
 
                         "Regards,\n" +
-                        "Enterprise Procurement System";
+                        "InfyProcure";
 
-        // User
+
+        /* -----------------------------------------------------
+           USER
+           ----------------------------------------------------- */
+
         sendEmail(
-                orderTracking.getProduct().getUser().getEmail(),
+                orderTracking
+                        .getProduct()
+                        .getUser()
+                        .getEmail(),
+
                 subject,
-                "Dear " + orderTracking.getProduct().getUser().getName() +
-                        ",\n\n" + body
+
+                "Dear " +
+                        orderTracking
+                                .getProduct()
+                                .getUser()
+                                .getName() +
+                        ",\n\n" +
+                        body
         );
 
-        // All Admins
-        for (Admin admin : adminRepository.findAll()) {
+
+        /* -----------------------------------------------------
+           ALL ADMINS
+           ----------------------------------------------------- */
+
+        for (Admin admin :
+                adminRepository.findAll()) {
+
             sendEmail(
                     admin.getEmail(),
+
                     subject,
-                    "Dear Admin,\n\n" + body
+
+                    "Dear Admin,\n\n" +
+                            body
             );
         }
 
-        // Supplier
+
+        /* -----------------------------------------------------
+           SUPPLIER
+           ----------------------------------------------------- */
+
         sendEmail(
-                orderTracking.getSupplier().getEmail(),
+                orderTracking
+                        .getSupplier()
+                        .getEmail(),
+
                 subject,
-                "Dear " + orderTracking.getSupplier().getSupplierName() +
-                        ",\n\n" + body
+
+                "Dear " +
+                        orderTracking
+                                .getSupplier()
+                                .getSupplierName() +
+                        ",\n\n" +
+                        body
         );
     }
 }

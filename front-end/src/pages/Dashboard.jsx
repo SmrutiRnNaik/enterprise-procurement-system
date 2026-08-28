@@ -1,143 +1,230 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
+
+import Sidebar from "../components/Sidebar";
 import StatsCard from "../components/StatsCard";
 import StatusPieChart from "../components/StatusPieChart";
-import TrendChart from "../components/TrendChart";
-import DownloadDropdown from "../components/DownloadDropdown";
 import RequestTable from "../components/RequestTable";
+
 import { getDashboardCounts } from "../services/dashboardService";
 
 function Dashboard() {
 
+    const navigate = useNavigate();
+
     const [dashboardData, setDashboardData] = useState({
-    totalRequests: 0,
-    pending: 0,
-    approved: 0,
-    rejected: 0
-});
+        totalRequests: 0,
+        pending: 0,
+        approved: 0,
+        rejected: 0
+    });
+
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
 
-    const fetchDashboardData = async () => {
+        const fetchDashboardData = async () => {
 
-        try {
+            try {
 
-            const response = await getDashboardCounts(1);
-            setDashboardData(response.data);
+                const userId = localStorage.getItem("userId");
 
-        } catch (error) {
+                if (!userId) {
+                    console.error("User ID not found.");
+                    return;
+                }
 
-            console.error("Error fetching dashboard data:", error);
+                const response = await getDashboardCounts(userId);
 
-        }
+                setDashboardData(response.data);
 
-    };
+            } catch (error) {
 
-    fetchDashboardData();
+                console.error(
+                    "Error fetching dashboard data:",
+                    error
+                );
 
-}, []);
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+        fetchDashboardData();
+
+    }, []);
 
     return (
 
         <div className="dashboard-page">
 
-            <Navbar />
+            <Sidebar />
 
-            <div className="container py-4">
+            <main className="dashboard-content">
 
-                <div className="d-flex justify-content-between align-items-center mb-4">
+                <div className="dashboard-shell">
 
-                    <div>
+                    <div className="container-fluid">
 
-                        <h2 className="fw-bold mb-1">
-                            User Dashboard
-                        </h2>
+                        {/* =================================================
+                            PAGE HEADER
+                        ================================================= */}
 
-                        <p className="text-muted mb-0">
-                            Enterprise Procurement System
-                        </p>
+                        <div className="dashboard-header">
+
+                            <div>
+
+                                <h2>
+                                    Dashboard
+                                </h2>
+
+                                <p className="text-muted mb-0">
+                                    Overview of your procurement activity
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =================================================
+                            STATISTICS
+                        ================================================= */}
+
+                        <div className="row g-3 mb-4">
+
+                            <div className="col-xl-3 col-md-6">
+
+                                <StatsCard
+                                    title="Total Requests"
+                                    value={
+                                        loading
+                                            ? "—"
+                                            : dashboardData.totalRequests
+                                    }
+                                    icon="clipboard-data"
+                                    color="primary"
+                                />
+
+                            </div>
+
+
+                            <div className="col-xl-3 col-md-6">
+
+                                <StatsCard
+                                    title="Pending"
+                                    value={
+                                        loading
+                                            ? "—"
+                                            : dashboardData.pending
+                                    }
+                                    icon="hourglass-split"
+                                    color="warning"
+                                />
+
+                            </div>
+
+
+                            <div className="col-xl-3 col-md-6">
+
+                                <StatsCard
+                                    title="Approved"
+                                    value={
+                                        loading
+                                            ? "—"
+                                            : dashboardData.approved
+                                    }
+                                    icon="check-circle"
+                                    color="success"
+                                />
+
+                            </div>
+
+
+                            <div className="col-xl-3 col-md-6">
+
+                                <StatsCard
+                                    title="Rejected"
+                                    value={
+                                        loading
+                                            ? "—"
+                                            : dashboardData.rejected
+                                    }
+                                    icon="x-circle"
+                                    color="danger"
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =================================================
+                            REQUEST STATUS
+                        ================================================= */}
+
+                        <div className="mb-4">
+
+                            <StatusPieChart
+                                data={dashboardData}
+                            />
+
+                        </div>
+
+
+                        {/* =================================================
+                            RECENT REQUESTS HEADER
+                        ================================================= */}
+
+                        <div className="recent-requests-header">
+
+                            <div>
+
+                                <h5 className="fw-bold mb-1">
+                                    Recent Requests
+                                </h5>
+
+                                <p className="text-muted small mb-0">
+                                    Your latest procurement requests
+                                </p>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                className="btn btn-outline-dark btn-sm"
+                                onClick={() =>
+                                    navigate("/request-history")
+                                }
+                            >
+
+                                View Full History
+
+                                <i className="bi bi-arrow-right ms-2"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        {/* =================================================
+                            RECENT REQUESTS TABLE
+                        ================================================= */}
+
+                        <RequestTable
+                            limit={5}
+                            showHeader={false}
+                        />
 
                     </div>
-
-                    <DownloadDropdown />
 
                 </div>
 
-                <div className="row g-3 mb-4">
-
-                    <div className="col-md-3">
-                        <StatsCard
-                            title="Total Requests"
-                            value={dashboardData.totalRequests}
-                            icon="clipboard-data"
-                            color="primary"
-                        />
-                    </div>
-
-                    <div className="col-md-3">
-                        <StatsCard
-                            title="Pending"
-                            value={dashboardData.pending}
-                            icon="hourglass-split"
-                            color="warning"
-                        />
-                    </div>
-
-                    <div className="col-md-3">
-                        <StatsCard
-                            title="Approved"
-                            value={dashboardData.approved}
-                            icon="check-circle"
-                            color="success"
-                        />
-                    </div>
-
-                    <div className="col-md-3">
-                        <StatsCard
-                            title="Rejected"
-                            value={dashboardData.rejected}
-                            icon="x-circle"
-                            color="danger"
-                        />
-                    </div>
-
-                </div>
-
-                <div className="row g-4 mb-4">
-
-                    <div className="col-lg-5">
-                        <StatusPieChart data={dashboardData} />
-                    </div>
-
-                    <div className="col-lg-7">
-                        <TrendChart />
-                    </div>
-
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center mb-3">
-
-                    <button className="btn btn-primary">
-
-                        <i className="bi bi-plus-circle me-2"></i>
-
-                        Raise Request
-
-                    </button>
-
-                    <button className="btn btn-outline-secondary">
-
-                        <i className="bi bi-clock-history me-2"></i>
-
-                        View All
-
-                    </button>
-
-                </div>
-
-                <RequestTable />
-
-            </div>
+            </main>
 
         </div>
 

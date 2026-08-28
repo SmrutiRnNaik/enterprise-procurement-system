@@ -1,6 +1,7 @@
 package com.infosys.procurement.controller;
 
 import com.infosys.procurement.dto.LoginRequest;
+import com.infosys.procurement.dto.LoginResponse;
 import com.infosys.procurement.entity.User;
 import com.infosys.procurement.service.UserService;
 import jakarta.validation.Valid;
@@ -23,12 +24,19 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequest loginRequest) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
 
-        userService.login(
+        User user = userService.login(
                 loginRequest.getName(),
                 loginRequest.getPassword());
 
-        return "User logged in successfully.";
+        return LoginResponse.builder()
+                .userId(user.getUserId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .designation(user.getDesignation())
+                .departmentId(user.getDepartment().getDepartmentId())
+                .message("User logged in successfully.")
+                .build();
     }
 }

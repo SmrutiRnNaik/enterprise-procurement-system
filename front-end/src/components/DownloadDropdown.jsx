@@ -1,22 +1,71 @@
-import Swal from "sweetalert2";
+import { useState } from "react";
+
 import { downloadHistory } from "../services/dashboardService";
 
+import {
+    showSuccess,
+    showError
+} from "../utils/notifications";
+
+
 function DownloadDropdown() {
+
+    const [downloading, setDownloading] = useState(false);
+
 
     const handleDownload = async (format) => {
 
         try {
 
-            const response = await downloadHistory(1, format);
+            const userId =
+                localStorage.getItem("userId");
 
-            const blob = new Blob([response.data]);
+            if (!userId) {
 
-            const url = window.URL.createObjectURL(blob);
+                showError(
+                    "User Not Found",
+                    "Please login again."
+                );
 
-            const link = document.createElement("a");
+                return;
+            }
+
+
+            setDownloading(true);
+
+
+            const response =
+                await downloadHistory(
+                    userId,
+                    format
+                );
+
+
+            const blob =
+                new Blob(
+                    [response.data],
+                    {
+                        type:
+                            response.headers[
+                                "content-type"
+                            ] ||
+                            "application/octet-stream"
+                    }
+                );
+
+
+            const url =
+                window.URL.createObjectURL(blob);
+
+
+            const link =
+                document.createElement("a");
 
             link.href = url;
-            link.download = `request-history.${format}`;
+
+            link.download =
+                `InfyProcure_Request_History.${format}`;
+
 
             document.body.appendChild(link);
 
@@ -24,68 +73,87 @@ function DownloadDropdown() {
 
             link.remove();
 
+
             window.URL.revokeObjectURL(url);
 
-            Swal.fire({
-                icon: "success",
-                title: "Download Started",
-                text: `${format.toUpperCase()} file downloaded successfully.`,
-                timer: 1500,
-                showConfirmButton: false
-            });
+
+            showSuccess(
+                "Download Complete",
+                `${format.toUpperCase()} report downloaded successfully.`
+            );
+
 
         } catch (error) {
 
-            Swal.fire({
-                icon: "error",
-                title: "Download Failed",
-                text: "Unable to download the file."
-            });
+            console.error(
+                "Download error:",
+                error
+            );
+
+
+            showError(
+                "Download Failed",
+                "Unable to download the request history."
+            );
+
+
+        } finally {
+
+            setDownloading(false);
 
         }
 
     };
+
 
     return (
 
         <div className="dropdown">
 
             <button
-                className="btn btn-outline-primary dropdown-toggle"
+                type="button"
+                className="btn btn-outline-dark dropdown-toggle"
                 data-bs-toggle="dropdown"
+                disabled={downloading}
             >
 
-                <i className="bi bi-download me-2"></i>
+                {downloading ? (
 
-                Download
+                    <>
+                        <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                        ></span>
+
+                        Downloading...
+                    </>
+
+                ) : (
+
+                    <>
+                        <i className="bi bi-download me-2"></i>
+
+                        Download
+                    </>
+
+                )}
 
             </button>
+
 
             <ul className="dropdown-menu dropdown-menu-end">
 
                 <li>
 
                     <button
+                        type="button"
                         className="dropdown-item"
-                        onClick={() => handleDownload("csv")}
+                        onClick={() =>
+                            handleDownload("pdf")
+                        }
                     >
 
-                        <i className="bi bi-filetype-csv me-2 text-success"></i>
-
-                        CSV
-
-                    </button>
-
-                </li>
-
-                <li>
-
-                    <button
-                        className="dropdown-item"
-                        onClick={() => handleDownload("pdf")}
-                    >
-
-                        <i className="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                        <i className="bi bi-file-earmark-pdf me-2"></i>
 
                         PDF
 
@@ -93,16 +161,39 @@ function DownloadDropdown() {
 
                 </li>
 
+
                 <li>
 
                     <button
+                        type="button"
                         className="dropdown-item"
-                        onClick={() => handleDownload("xlsx")}
+                        onClick={() =>
+                            handleDownload("csv")
+                        }
                     >
 
-                        <i className="bi bi-file-earmark-excel me-2 text-success"></i>
+                        <i className="bi bi-filetype-csv me-2"></i>
 
-                        Excel
+                        CSV
+
+                    </button>
+
+                </li>
+
+
+                <li>
+
+                    <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={() =>
+                            handleDownload("xlsx")
+                        }
+                    >
+
+                        <i className="bi bi-file-earmark-excel me-2"></i>
+
+                        Excel (.xlsx)
 
                     </button>
 
