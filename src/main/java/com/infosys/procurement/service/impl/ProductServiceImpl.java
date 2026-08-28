@@ -62,6 +62,10 @@ public class ProductServiceImpl implements ProductService {
     private EmailService emailService;
 
 
+    /* =========================================================
+       RAISE REQUEST
+       ========================================================= */
+
     @Override
     public RequestResponse<ProductResponse> raiseRequest(
             ProductRequest request) {
@@ -69,30 +73,50 @@ public class ProductServiceImpl implements ProductService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "User not found."));
+                                "User not found."
+                        )
+                );
 
         Department department = departmentRepository
                 .findById(request.getDepartmentId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Department not found."));
+                                "Department not found."
+                        )
+                );
 
         Category category = categoryRepository
                 .findById(request.getCategoryId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Category not found."));
+                                "Category not found."
+                        )
+                );
 
         Product product = new Product();
 
-        product.setProductName(request.getProductName());
+        product.setProductName(
+                request.getProductName()
+        );
+
         product.setUser(user);
+
         product.setDepartment(department);
+
         product.setCategory(category);
+
         product.setPricePerProduct(
-                request.getPricePerProduct());
-        product.setQuantity(request.getQuantity());
-        product.setDescription(request.getDescription());
+                request.getPricePerProduct()
+        );
+
+        product.setQuantity(
+                request.getQuantity()
+        );
+
+        product.setDescription(
+                request.getDescription()
+        );
+
 
         BigDecimal totalPrice =
                 request.getPricePerProduct()
@@ -103,26 +127,55 @@ public class ProductServiceImpl implements ProductService {
                         );
 
         product.setTotalPrice(totalPrice);
-        product.setStatus(ProductStatus.PENDING_APPROVAL);
-        product.setCreatedDate(LocalDateTime.now());
-        product.setUpdatedDate(LocalDateTime.now());
+
+
+        /*
+         * Every newly raised request starts as
+         * PENDING_APPROVAL.
+         */
+
+        product.setStatus(
+                ProductStatus.PENDING_APPROVAL
+        );
+
+        product.setCreatedDate(
+                LocalDateTime.now()
+        );
+
+        product.setUpdatedDate(
+                LocalDateTime.now()
+        );
+
 
         Product savedProduct =
                 productRepository.save(product);
 
+
+        /*
+         * Notify admin about the new request.
+         */
+
         Admin admin = adminRepository.findById(1L)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Admin not found."));
+                                "Admin not found."
+                        )
+                );
+
 
         try {
+
             emailService.sendNewRequestNotification(
                     admin,
                     savedProduct
             );
+
         } catch (Exception e) {
+
             // Email failure should not stop request creation.
+
         }
+
 
         return new RequestResponse<>(
                 "Request submitted successfully.",
@@ -131,57 +184,95 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /* =========================================================
+       REQUEST HISTORY
+       ========================================================= */
+
     @Override
     public RequestResponse<List<ProductResponse>> getActionHistory(
             String type,
             Long id) {
 
         List<Product> products;
+
         String message;
+
+
+        /* =====================================================
+           USER HISTORY
+           ===================================================== */
 
         if ("user".equalsIgnoreCase(type)) {
 
             if (id == null) {
+
                 throw new IllegalArgumentException(
                         "User id is required when type is user."
                 );
+
             }
+
 
             userRepository.findById(id)
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
-                                    "User not found."));
-
-            products = productRepository
-                    .findByUser_UserIdOrderByCreatedDateDesc(id);
-
-            message =
-                    "User request history fetched successfully.";
-
-        } else if ("admin".equalsIgnoreCase(type)) {
-
-            products = productRepository
-                    .findByStatusInOrderByUpdatedDateDesc(
-                            List.of(
-                                    ProductStatus.APPROVED,
-                                    ProductStatus.REJECTED
+                                    "User not found."
                             )
                     );
 
-            message =
-                    "Admin action history fetched successfully.";
 
-        } else {
+            products =
+                    productRepository
+                            .findByUser_UserIdOrderByCreatedDateDesc(
+                                    id
+                            );
+
+
+            message =
+                    "User request history fetched successfully.";
+        }
+
+
+        /* =====================================================
+           ADMIN HISTORY
+
+           IMPORTANT:
+           Admin must see ALL requests:
+
+           PENDING_APPROVAL
+           APPROVED
+           REJECTED
+           ===================================================== */
+
+        else if ("admin".equalsIgnoreCase(type)) {
+
+            products =
+                    productRepository
+                            .findAllByOrderByCreatedDateDesc();
+
+
+            message =
+                    "Admin request history fetched successfully.";
+        }
+
+
+        /* =====================================================
+           INVALID TYPE
+           ===================================================== */
+
+        else {
 
             throw new IllegalArgumentException(
                     "Invalid type. Use user or admin."
             );
         }
 
+
         List<ProductResponse> responses =
                 products.stream()
                         .map(this::mapToProductResponse)
                         .toList();
+
 
         return new RequestResponse<>(
                 message,
@@ -189,6 +280,10 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
+
+    /* =========================================================
+       DOWNLOAD REQUEST HISTORY
+       ========================================================= */
 
     @Override
     public byte[] downloadActionHistory(
@@ -199,19 +294,28 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products =
                 getProductsForHistory(type, id);
 
+
         switch (format.toLowerCase()) {
 
             case "csv":
+
                 return generateCsv(products);
 
+
             case "xlsx":
+
             case "excel":
+
                 return generateExcel(products);
 
+
             case "pdf":
+
                 return generatePdf(products);
 
+
             default:
+
                 throw new IllegalArgumentException(
                         "Invalid format. Use csv, xlsx or pdf."
                 );
@@ -219,37 +323,57 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /* =========================================================
+       GET PRODUCTS FOR DOWNLOAD
+       ========================================================= */
+
     private List<Product> getProductsForHistory(
             String type,
             Long id) {
 
+
+        /* =====================================================
+           USER DOWNLOAD
+           ===================================================== */
+
         if ("user".equalsIgnoreCase(type)) {
 
             if (id == null) {
+
                 throw new IllegalArgumentException(
                         "User id is required when type is user."
                 );
             }
 
+
             userRepository.findById(id)
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
-                                    "User not found."));
+                                    "User not found."
+                            )
+                    );
+
 
             return productRepository
-                    .findByUser_UserIdOrderByCreatedDateDesc(id);
+                    .findByUser_UserIdOrderByCreatedDateDesc(
+                            id
+                    );
         }
+
+
+        /* =====================================================
+           ADMIN DOWNLOAD
+
+           IMPORTANT:
+           Include ALL statuses.
+           ===================================================== */
 
         if ("admin".equalsIgnoreCase(type)) {
 
             return productRepository
-                    .findByStatusInOrderByUpdatedDateDesc(
-                            List.of(
-                                    ProductStatus.APPROVED,
-                                    ProductStatus.REJECTED
-                            )
-                    );
+                    .findAllByOrderByCreatedDateDesc();
         }
+
 
         throw new IllegalArgumentException(
                 "Invalid type. Use user or admin."
@@ -257,47 +381,71 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /* =========================================================
+       MAP PRODUCT → RESPONSE
+       ========================================================= */
+
     private ProductResponse mapToProductResponse(
             Product product) {
 
         return ProductResponse.builder()
-                .productId(product.getProductId())
-                .productName(product.getProductName())
+
+                .productId(
+                        product.getProductId()
+                )
+
+                .productName(
+                        product.getProductName()
+                )
+
                 .requestedBy(
                         product.getUser().getName()
                 )
+
                 .department(
                         product.getDepartment()
                                 .getDepartmentName()
                 )
+
                 .category(
                         product.getCategory()
                                 .getCategoryName()
                 )
+
                 .pricePerProduct(
                         product.getPricePerProduct()
                 )
+
                 .quantity(
                         product.getQuantity()
                 )
+
                 .totalPrice(
                         product.getTotalPrice()
                 )
+
                 .status(
                         product.getStatus()
                 )
+
                 .createdDate(
                         product.getCreatedDate()
                 )
+
                 .build();
     }
 
+
+    /* =========================================================
+       GENERATE CSV
+       ========================================================= */
 
     private byte[] generateCsv(
             List<Product> products) {
 
         StringBuilder csv =
                 new StringBuilder();
+
 
         csv.append(
                 "Product ID,"
@@ -312,11 +460,13 @@ public class ProductServiceImpl implements ProductService {
                         + "Created Date\n"
         );
 
+
         for (Product product : products) {
 
             csv.append(
                     product.getProductId()
             ).append(",");
+
 
             csv.append(
                     escapeCsv(
@@ -324,11 +474,13 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
+
             csv.append(
                     escapeCsv(
                             product.getUser().getName()
                     )
             ).append(",");
+
 
             csv.append(
                     escapeCsv(
@@ -337,6 +489,7 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
+
             csv.append(
                     escapeCsv(
                             product.getCategory()
@@ -344,68 +497,94 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
+
             csv.append(
                     product.getQuantity()
             ).append(",");
+
 
             csv.append(
                     product.getPricePerProduct()
             ).append(",");
 
+
             csv.append(
                     product.getTotalPrice()
             ).append(",");
 
+
             csv.append(
                     product.getStatus()
             ).append(",");
+
 
             csv.append(
                     product.getCreatedDate()
             ).append("\n");
         }
 
+
         return csv.toString()
                 .getBytes(StandardCharsets.UTF_8);
     }
 
 
-    private String escapeCsv(String value) {
+    /* =========================================================
+       ESCAPE CSV
+       ========================================================= */
+
+    private String escapeCsv(
+            String value) {
 
         if (value == null) {
+
             return "";
         }
+
 
         if (value.contains(",")
                 || value.contains("\"")
                 || value.contains("\n")) {
 
             return "\""
-                    + value.replace("\"", "\"\"")
+                    + value.replace(
+                    "\"",
+                    "\"\""
+            )
                     + "\"";
         }
+
 
         return value;
     }
 
 
+    /* =========================================================
+       GENERATE EXCEL
+       ========================================================= */
+
     private byte[] generateExcel(
             List<Product> products) {
 
         try (
+
                 Workbook workbook =
                         new XSSFWorkbook();
 
                 ByteArrayOutputStream outputStream =
                         new ByteArrayOutputStream()
+
         ) {
+
 
             Sheet sheet =
                     workbook.createSheet(
                             "Procurement Requests"
                     );
 
+
             String[] headers = {
+
                     "Product ID",
                     "Product Name",
                     "Requested By",
@@ -416,40 +595,55 @@ public class ProductServiceImpl implements ProductService {
                     "Total Price",
                     "Status",
                     "Created Date"
+
             };
+
 
             Row header =
                     sheet.createRow(0);
 
-            for (int i = 0;
-                 i < headers.length;
-                 i++) {
+
+            for (
+                    int i = 0;
+                    i < headers.length;
+                    i++
+            ) {
 
                 header.createCell(i)
-                        .setCellValue(headers[i]);
+                        .setCellValue(
+                                headers[i]
+                        );
             }
 
+
             int rowNumber = 1;
+
 
             for (Product product : products) {
 
                 Row row =
-                        sheet.createRow(rowNumber++);
+                        sheet.createRow(
+                                rowNumber++
+                        );
+
 
                 row.createCell(0)
                         .setCellValue(
                                 product.getProductId()
                         );
 
+
                 row.createCell(1)
                         .setCellValue(
                                 product.getProductName()
                         );
 
+
                 row.createCell(2)
                         .setCellValue(
                                 product.getUser().getName()
                         );
+
 
                 row.createCell(3)
                         .setCellValue(
@@ -457,16 +651,19 @@ public class ProductServiceImpl implements ProductService {
                                         .getDepartmentName()
                         );
 
+
                 row.createCell(4)
                         .setCellValue(
                                 product.getCategory()
                                         .getCategoryName()
                         );
 
+
                 row.createCell(5)
                         .setCellValue(
                                 product.getQuantity()
                         );
+
 
                 row.createCell(6)
                         .setCellValue(
@@ -474,17 +671,20 @@ public class ProductServiceImpl implements ProductService {
                                         .doubleValue()
                         );
 
+
                 row.createCell(7)
                         .setCellValue(
                                 product.getTotalPrice()
                                         .doubleValue()
                         );
 
+
                 row.createCell(8)
                         .setCellValue(
                                 product.getStatus()
                                         .toString()
                         );
+
 
                 row.createCell(9)
                         .setCellValue(
@@ -493,16 +693,22 @@ public class ProductServiceImpl implements ProductService {
                         );
             }
 
-            for (int i = 0;
-                 i < headers.length;
-                 i++) {
+
+            for (
+                    int i = 0;
+                    i < headers.length;
+                    i++
+            ) {
 
                 sheet.autoSizeColumn(i);
             }
 
+
             workbook.write(outputStream);
 
+
             return outputStream.toByteArray();
+
 
         } catch (Exception e) {
 
@@ -514,6 +720,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    /* =========================================================
+       GENERATE PDF
+       ========================================================= */
+
     private byte[] generatePdf(
             List<Product> products) {
 
@@ -522,17 +732,21 @@ public class ProductServiceImpl implements ProductService {
                         new ByteArrayOutputStream()
         ) {
 
+
             Document document =
                     new Document(
                             PageSize.A4.rotate()
                     );
+
 
             PdfWriter.getInstance(
                     document,
                     outputStream
             );
 
+
             document.open();
+
 
             document.add(
                     new Paragraph(
@@ -540,7 +754,9 @@ public class ProductServiceImpl implements ProductService {
                     )
             );
 
+
             float[] columnWidths = {
+
                     0.7f,
                     2.5f,
                     1.7f,
@@ -550,17 +766,27 @@ public class ProductServiceImpl implements ProductService {
                     1.3f,
                     1.5f,
                     2.2f
+
             };
 
+
             PdfPTable table =
-                    new PdfPTable(columnWidths);
+                    new PdfPTable(
+                            columnWidths
+                    );
+
 
             table.setWidthPercentage(100);
+
             table.setSplitRows(true);
+
             table.setSplitLate(false);
+
             table.setHeaderRows(1);
 
+
             String[] headers = {
+
                     "ID",
                     "Product",
                     "Department",
@@ -570,7 +796,9 @@ public class ProductServiceImpl implements ProductService {
                     "Total",
                     "Status",
                     "Created"
+
             };
+
 
             for (String header : headers) {
 
@@ -582,6 +810,7 @@ public class ProductServiceImpl implements ProductService {
                 table.addCell(cell);
             }
 
+
             for (Product product : products) {
 
                 table.addCell(
@@ -590,19 +819,23 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
+
                 table.addCell(
                         product.getProductName()
                 );
+
 
                 table.addCell(
                         product.getDepartment()
                                 .getDepartmentName()
                 );
 
+
                 table.addCell(
                         product.getCategory()
                                 .getCategoryName()
                 );
+
 
                 table.addCell(
                         String.valueOf(
@@ -610,11 +843,13 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
+
                 table.addCell(
                         String.valueOf(
                                 product.getPricePerProduct()
                         )
                 );
+
 
                 table.addCell(
                         String.valueOf(
@@ -622,10 +857,12 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
+
                 table.addCell(
                         product.getStatus()
                                 .toString()
                 );
+
 
                 table.addCell(
                         product.getCreatedDate()
@@ -633,11 +870,15 @@ public class ProductServiceImpl implements ProductService {
                 );
             }
 
+
             document.add(table);
+
 
             document.close();
 
+
             return outputStream.toByteArray();
+
 
         } catch (Exception e) {
 

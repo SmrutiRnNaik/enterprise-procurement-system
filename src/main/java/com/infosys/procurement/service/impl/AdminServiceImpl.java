@@ -106,11 +106,41 @@ public class AdminServiceImpl implements AdminService {
         Product updatedProduct = productRepository.save(product);
 
         // Send notification email to the user
+        /* =========================================================
+   SEND STATUS NOTIFICATIONS
+   ========================================================= */
+
+        /*
+         * Send notification to the user.
+         */
         try {
-            emailService.sendRequestStatusNotification(updatedProduct);
+
+            emailService.sendRequestStatusNotification(
+                    updatedProduct
+            );
+
         } catch (Exception e) {
+
             // Email failure should not stop the status update.
-            // The error is already logged in EmailServiceImpl.
+        }
+
+
+        /*
+         * Send notification to all admins.
+         */
+        for (Admin admin : adminRepository.findAll()) {
+
+            try {
+
+                emailService.sendRequestStatusNotificationToAdmin(
+                        admin,
+                        updatedProduct
+                );
+
+            } catch (Exception e) {
+
+                // Email failure should not stop the status update.
+            }
         }
 
         ProductResponse productResponse = ProductResponse.builder()

@@ -202,6 +202,72 @@ public class EmailServiceImpl implements EmailService {
         );
     }
 
+    /* =========================================================
+   REQUEST STATUS → ADMIN
+   ========================================================= */
+
+    @Override
+    public void sendRequestStatusNotificationToAdmin(
+            Admin admin,
+            Product product) {
+
+        String status =
+                product.getStatus() == ProductStatus.APPROVED
+                        ? "APPROVED"
+                        : "REJECTED";
+
+
+        String subject =
+                "Procurement Request " + status +
+                        " - " +
+                        product.getProductName();
+
+
+        String body =
+                "Dear Admin,\n\n" +
+
+                        "A procurement request has been " +
+                        status.toLowerCase() +
+                        ".\n\n" +
+
+                        "Request Details\n" +
+                        "------------------------------\n" +
+
+                        "Product        : " +
+                        product.getProductName() + "\n" +
+
+                        "Requested By   : " +
+                        product.getUser().getName() + "\n" +
+
+                        "Department     : " +
+                        product.getDepartment().getDepartmentName() + "\n" +
+
+                        "Category       : " +
+                        product.getCategory().getCategoryName() + "\n" +
+
+                        "Quantity       : " +
+                        product.getQuantity() + "\n" +
+
+                        "Unit Price     : ₹" +
+                        product.getPricePerProduct() + "\n" +
+
+                        "Total Amount   : ₹" +
+                        product.getTotalPrice() + "\n" +
+
+                        "Status         : " +
+                        status + "\n\n" +
+
+                        "Regards,\n" +
+                        "InfyProcure";
+
+
+        sendEmail(
+                admin.getEmail(),
+                subject,
+                body
+        );
+    }
+
 
     /* =========================================================
        PAYMENT COMPLETED → ADMIN

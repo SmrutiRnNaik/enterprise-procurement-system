@@ -9,19 +9,26 @@ import {
 
 import loginImage from "../assets/login.png";
 
+
 function Login() {
 
     const navigate = useNavigate();
+
 
     const [form, setForm] = useState({
         name: "",
         password: ""
     });
 
+
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
 
+
+    /* =========================================================
+       HANDLE INPUT
+       ========================================================= */
 
     const handleChange = (e) => {
 
@@ -34,6 +41,10 @@ function Login() {
 
     };
 
+
+    /* =========================================================
+       LOGIN
+       ========================================================= */
 
     const handleSubmit = async (e) => {
 
@@ -48,7 +59,9 @@ function Login() {
             const user = response.data;
 
 
-            /* Store logged-in user's details */
+            /* =================================================
+               STORE LOGIN DETAILS
+            ================================================= */
 
             localStorage.setItem(
                 "userId",
@@ -70,11 +83,42 @@ function Login() {
                 user.designation
             );
 
+
+            /*
+             * Admins do not have a department.
+             * Avoid storing the string "null".
+             */
+
+            if (user.departmentId !== null &&
+                user.departmentId !== undefined) {
+
+                localStorage.setItem(
+                    "departmentId",
+                    user.departmentId
+                );
+
+            } else {
+
+                localStorage.removeItem(
+                    "departmentId"
+                );
+
+            }
+
+
+            /*
+             * Store role.
+             */
+
             localStorage.setItem(
-                "departmentId",
-                user.departmentId
+                "role",
+                user.role
             );
 
+
+            /* =================================================
+               REMEMBER ME
+            ================================================= */
 
             if (rememberMe) {
 
@@ -92,13 +136,29 @@ function Login() {
             }
 
 
+            /* =================================================
+               SUCCESS MESSAGE
+            ================================================= */
+
             showSuccess(
                 "Login Successful",
                 `Welcome back, ${user.name}!`
             );
 
 
-            navigate("/dashboard");
+            /* =================================================
+               ROLE-BASED REDIRECT
+            ================================================= */
+
+            if (user.role === "ADMIN") {
+
+                navigate("/admin-dashboard");
+
+            } else {
+
+                navigate("/dashboard");
+
+            }
 
 
         } catch (error) {
@@ -377,5 +437,6 @@ function Login() {
     );
 
 }
+
 
 export default Login;

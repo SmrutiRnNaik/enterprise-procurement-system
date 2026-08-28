@@ -8,11 +8,25 @@ import com.infosys.procurement.entity.Supplier;
 
 public interface EmailService {
 
-    void sendEmail(String to, String subject, String body);
+    void sendEmail(
+            String to,
+            String subject,
+            String body
+    );
 
-    void sendNewRequestNotification(Admin admin, Product product);
+    void sendNewRequestNotification(
+            Admin admin,
+            Product product
+    );
 
-    void sendRequestStatusNotification(Product product);
+    void sendRequestStatusNotification(
+            Product product
+    );
+
+    void sendRequestStatusNotificationToAdmin(
+            Admin admin,
+            Product product
+    );
 
     void sendPaymentConfirmationToAdmin(
             Admin admin,

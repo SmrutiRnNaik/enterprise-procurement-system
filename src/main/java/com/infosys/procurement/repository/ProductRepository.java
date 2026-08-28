@@ -22,7 +22,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             List<ProductStatus> statuses
     );
 
+    /*
+     * Returns ALL procurement requests,
+     * including PENDING_APPROVAL, APPROVED
+     * and REJECTED.
+     */
+    List<Product> findAllByOrderByCreatedDateDesc();
+
     Long countByUser_UserId(Long userId);
 
-    Long countByUser_UserIdAndStatus(Long userId, ProductStatus status);
+    Long countByUser_UserIdAndStatus(
+            Long userId,
+            ProductStatus status
+    );
 }

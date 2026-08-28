@@ -19,5 +19,7 @@ public class LoginResponse {
 
     private Long departmentId;
 
+    private String role;
+
     private String message;
 }
