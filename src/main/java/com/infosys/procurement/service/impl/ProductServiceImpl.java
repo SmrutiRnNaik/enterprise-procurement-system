@@ -11,18 +11,25 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.infosys.procurement.dto.ProductRequest;
 import com.infosys.procurement.dto.ProductResponse;
 import com.infosys.procurement.dto.RequestResponse;
+
 import com.infosys.procurement.entity.Admin;
 import com.infosys.procurement.entity.Category;
 import com.infosys.procurement.entity.Department;
 import com.infosys.procurement.entity.Product;
+import com.infosys.procurement.entity.ProductCatalog;
+import com.infosys.procurement.entity.Supplier;
 import com.infosys.procurement.entity.User;
+
 import com.infosys.procurement.enums.ProductStatus;
+
 import com.infosys.procurement.exception.ResourceNotFoundException;
+
 import com.infosys.procurement.repository.AdminRepository;
-import com.infosys.procurement.repository.CategoryRepository;
 import com.infosys.procurement.repository.DepartmentRepository;
+import com.infosys.procurement.repository.ProductCatalogRepository;
 import com.infosys.procurement.repository.ProductRepository;
 import com.infosys.procurement.repository.UserRepository;
+
 import com.infosys.procurement.service.EmailService;
 import com.infosys.procurement.service.ProductService;
 
@@ -53,10 +60,10 @@ public class ProductServiceImpl implements ProductService {
     private DepartmentRepository departmentRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private AdminRepository adminRepository;
 
     @Autowired
-    private AdminRepository adminRepository;
+    private ProductCatalogRepository productCatalogRepository;
 
     @Autowired
     private EmailService emailService;
@@ -70,6 +77,10 @@ public class ProductServiceImpl implements ProductService {
     public RequestResponse<ProductResponse> raiseRequest(
             ProductRequest request) {
 
+        /* =====================================================
+           FIND USER
+           ===================================================== */
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -77,49 +88,153 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-        Department department = departmentRepository
-                .findById(request.getDepartmentId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Department not found."
-                        )
-                );
 
-        Category category = categoryRepository
-                .findById(request.getCategoryId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Category not found."
+        /* =====================================================
+           FIND DEPARTMENT
+           ===================================================== */
+
+        Department department =
+                departmentRepository.findById(
+                                request.getDepartmentId()
                         )
-                );
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Department not found."
+                                )
+                        );
+
+
+        /* =====================================================
+           FIND PRODUCT FROM CATALOG
+           ===================================================== */
+
+        ProductCatalog catalogProduct =
+                productCatalogRepository.findById(
+                                request.getCatalogProductId()
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Catalog product not found."
+                                )
+                        );
+
+
+        /* =====================================================
+           GET CATEGORY FROM CATALOG
+           ===================================================== */
+
+        Category category =
+                catalogProduct.getCategory();
+
+
+        if (category == null) {
+
+            throw new ResourceNotFoundException(
+                    "Category is not configured for this product."
+            );
+        }
+
+
+        /* =====================================================
+           GET SUPPLIER FROM CATALOG
+           ===================================================== */
+
+        Supplier supplier =
+                catalogProduct.getSupplier();
+
+
+        if (supplier == null) {
+
+            throw new ResourceNotFoundException(
+                    "Supplier is not configured for this product."
+            );
+        }
+
+
+        /* =====================================================
+           VERIFY SUPPLIER IS ACTIVE
+           ===================================================== */
+
+        if (supplier.getStatus() == null ||
+                !"ACTIVE".equals(
+                        supplier.getStatus().name()
+                )) {
+
+            throw new IllegalArgumentException(
+                    "Supplier is not active."
+            );
+        }
+
+
+        /* =====================================================
+           CREATE PRODUCT REQUEST
+           ===================================================== */
 
         Product product = new Product();
 
+
+        /*
+         * Product name comes from ProductCatalog.
+         */
         product.setProductName(
-                request.getProductName()
+                catalogProduct.getProductName()
         );
 
+
+        /*
+         * User comes from logged-in/user request.
+         */
         product.setUser(user);
 
+
+        /*
+         * Department comes from request.
+         */
         product.setDepartment(department);
 
+
+        /*
+         * Category comes automatically from catalog.
+         */
         product.setCategory(category);
 
+
+        /*
+         * Supplier comes automatically from catalog.
+         */
+        product.setSupplier(supplier);
+
+
+        /*
+         * Price comes automatically from catalog.
+         */
         product.setPricePerProduct(
-                request.getPricePerProduct()
+                catalogProduct.getPrice()
         );
 
+
+        /*
+         * Quantity comes from user.
+         */
         product.setQuantity(
                 request.getQuantity()
         );
 
+
+        /*
+         * Description comes from user.
+         */
         product.setDescription(
                 request.getDescription()
         );
 
 
+        /* =====================================================
+           CALCULATE TOTAL PRICE
+           ===================================================== */
+
         BigDecimal totalPrice =
-                request.getPricePerProduct()
+                catalogProduct.getPrice()
                         .multiply(
                                 BigDecimal.valueOf(
                                         request.getQuantity()
@@ -129,38 +244,42 @@ public class ProductServiceImpl implements ProductService {
         product.setTotalPrice(totalPrice);
 
 
-        /*
-         * Every newly raised request starts as
-         * PENDING_APPROVAL.
-         */
+        /* =====================================================
+           SET INITIAL STATUS
+           ===================================================== */
 
         product.setStatus(
                 ProductStatus.PENDING_APPROVAL
         );
 
-        product.setCreatedDate(
-                LocalDateTime.now()
-        );
 
-        product.setUpdatedDate(
-                LocalDateTime.now()
-        );
+        LocalDateTime now =
+                LocalDateTime.now();
 
+        product.setCreatedDate(now);
+
+        product.setUpdatedDate(now);
+
+
+        /* =====================================================
+           SAVE REQUEST
+           ===================================================== */
 
         Product savedProduct =
                 productRepository.save(product);
 
 
-        /*
-         * Notify admin about the new request.
-         */
+        /* =====================================================
+           NOTIFY ADMIN
+           ===================================================== */
 
-        Admin admin = adminRepository.findById(1L)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Admin not found."
-                        )
-                );
+        Admin admin =
+                adminRepository.findById(1L)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Admin not found."
+                                )
+                        );
 
 
         try {
@@ -172,8 +291,10 @@ public class ProductServiceImpl implements ProductService {
 
         } catch (Exception e) {
 
-            // Email failure should not stop request creation.
-
+            /*
+             * Email failure should not stop
+             * request creation.
+             */
         }
 
 
@@ -209,7 +330,6 @@ public class ProductServiceImpl implements ProductService {
                 throw new IllegalArgumentException(
                         "User id is required when type is user."
                 );
-
             }
 
 
@@ -236,8 +356,7 @@ public class ProductServiceImpl implements ProductService {
         /* =====================================================
            ADMIN HISTORY
 
-           IMPORTANT:
-           Admin must see ALL requests:
+           Includes:
 
            PENDING_APPROVAL
            APPROVED
@@ -363,9 +482,6 @@ public class ProductServiceImpl implements ProductService {
 
         /* =====================================================
            ADMIN DOWNLOAD
-
-           IMPORTANT:
-           Include ALL statuses.
            ===================================================== */
 
         if ("admin".equalsIgnoreCase(type)) {
@@ -412,6 +528,14 @@ public class ProductServiceImpl implements ProductService {
                                 .getCategoryName()
                 )
 
+                .supplierId(
+                        product.getSupplier().getSupplierId()
+                )
+
+                .supplierName(
+                        product.getSupplier().getSupplierName()
+                )
+
                 .pricePerProduct(
                         product.getPricePerProduct()
                 )
@@ -453,6 +577,7 @@ public class ProductServiceImpl implements ProductService {
                         + "Requested By,"
                         + "Department,"
                         + "Category,"
+                        + "Supplier,"
                         + "Quantity,"
                         + "Price Per Product,"
                         + "Total Price,"
@@ -494,6 +619,14 @@ public class ProductServiceImpl implements ProductService {
                     escapeCsv(
                             product.getCategory()
                                     .getCategoryName()
+                    )
+            ).append(",");
+
+
+            csv.append(
+                    escapeCsv(
+                            product.getSupplier()
+                                    .getSupplierName()
                     )
             ).append(",");
 
@@ -590,6 +723,7 @@ public class ProductServiceImpl implements ProductService {
                     "Requested By",
                     "Department",
                     "Category",
+                    "Supplier",
                     "Quantity",
                     "Price Per Product",
                     "Total Price",
@@ -661,32 +795,39 @@ public class ProductServiceImpl implements ProductService {
 
                 row.createCell(5)
                         .setCellValue(
-                                product.getQuantity()
+                                product.getSupplier()
+                                        .getSupplierName()
                         );
 
 
                 row.createCell(6)
+                        .setCellValue(
+                                product.getQuantity()
+                        );
+
+
+                row.createCell(7)
                         .setCellValue(
                                 product.getPricePerProduct()
                                         .doubleValue()
                         );
 
 
-                row.createCell(7)
+                row.createCell(8)
                         .setCellValue(
                                 product.getTotalPrice()
                                         .doubleValue()
                         );
 
 
-                row.createCell(8)
+                row.createCell(9)
                         .setCellValue(
                                 product.getStatus()
                                         .toString()
                         );
 
 
-                row.createCell(9)
+                row.createCell(10)
                         .setCellValue(
                                 product.getCreatedDate()
                                         .toString()
@@ -758,14 +899,16 @@ public class ProductServiceImpl implements ProductService {
             float[] columnWidths = {
 
                     0.7f,
-                    2.5f,
-                    1.7f,
+                    2.3f,
                     1.5f,
+                    1.4f,
+                    1.2f,
+                    1.6f,
                     0.7f,
                     1.3f,
-                    1.3f,
+                    1.4f,
                     1.5f,
-                    2.2f
+                    2.0f
 
             };
 
@@ -789,8 +932,10 @@ public class ProductServiceImpl implements ProductService {
 
                     "ID",
                     "Product",
+                    "Requested By",
                     "Department",
                     "Category",
+                    "Supplier",
                     "Qty",
                     "Price",
                     "Total",
@@ -826,6 +971,11 @@ public class ProductServiceImpl implements ProductService {
 
 
                 table.addCell(
+                        product.getUser().getName()
+                );
+
+
+                table.addCell(
                         product.getDepartment()
                                 .getDepartmentName()
                 );
@@ -834,6 +984,12 @@ public class ProductServiceImpl implements ProductService {
                 table.addCell(
                         product.getCategory()
                                 .getCategoryName()
+                );
+
+
+                table.addCell(
+                        product.getSupplier()
+                                .getSupplierName()
                 );
 
 

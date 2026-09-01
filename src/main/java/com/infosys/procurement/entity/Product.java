@@ -15,8 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"user", "department", "category"})
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
+@ToString(exclude = {"user", "supplier", "department", "category"})
+@JsonIgnoreProperties({
+        "hibernateLazyInitializer",
+        "handler"
+})
 public class Product {
 
     @Id
@@ -24,51 +27,88 @@ public class Product {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "product_name",
+    @Column(
+            name = "product_name",
             nullable = false,
-            length = 150)
+            length = 150
+    )
     private String productName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
     private User user;
 
-    @Column(name = "price_per_product",
+    /*
+     * Supplier is automatically obtained from ProductCatalog.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "supplier_id",
+            nullable = false
+    )
+    private Supplier supplier;
+
+    @Column(
+            name = "price_per_product",
             nullable = false,
             precision = 10,
-            scale = 2)
+            scale = 2
+    )
     private BigDecimal pricePerProduct;
 
-    @Column(name = "quantity",
-            nullable = false)
+    @Column(
+            name = "quantity",
+            nullable = false
+    )
     private Integer quantity;
 
-    @Column(name = "total_price",
+    @Column(
+            name = "total_price",
             nullable = false,
             precision = 12,
-            scale = 2)
+            scale = 2
+    )
     private BigDecimal totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", nullable = false)
+    @JoinColumn(
+            name = "department_id",
+            nullable = false
+    )
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(
+            name = "category_id",
+            nullable = false
+    )
     private Category category;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(
+            name = "description",
+            columnDefinition = "TEXT"
+    )
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(
+            name = "status",
+            nullable = false
+    )
     private ProductStatus status;
 
-    @Column(name = "created_date",
-            nullable = false)
+    @Column(
+            name = "created_date",
+            nullable = false
+    )
     private LocalDateTime createdDate;
 
-    @Column(name = "updated_date",
-            nullable = false)
+    @Column(
+            name = "updated_date",
+            nullable = false
+    )
     private LocalDateTime updatedDate;
 }

@@ -182,26 +182,108 @@ function AdminRequestHistory() {
             });
 
 
+            /* =================================================
+               UPDATE REQUEST STATUS
+               ================================================= */
+
             await updateRequestStatus(
                 productId,
                 status
             );
 
 
+            /* =================================================
+               APPROVED REQUEST
+               ================================================= */
+
+            if (isApproving) {
+
+                /*
+                 * Find the request that was just approved.
+                 */
+
+                const approvedRequest =
+                    requests.find(
+                        request =>
+                            request.productId === productId
+                    );
+
+
+                /*
+                 * If request details cannot be found,
+                 * reload the list and stop.
+                 */
+
+                if (!approvedRequest) {
+
+                    showError(
+                        "Error",
+                        "Approved request details could not be found."
+                    );
+
+                    await fetchRequests();
+
+                    return;
+
+                }
+
+
+                /*
+                 * Show approval message.
+                 */
+
+                showSuccess(
+                    "Request Approved",
+                    `Request #${productId} has been approved successfully.`
+                );
+
+
+                /*
+                 * Open payment page.
+                 *
+                 * The complete approved request is passed
+                 * through React Router state.
+                 *
+                 * PaymentPage can access it using:
+                 *
+                 * location.state.product
+                 */
+
+                navigate(
+                    "/payment",
+                    {
+                        state: {
+                            product: approvedRequest
+                        }
+                    }
+                );
+
+
+                /*
+                 * Stop here.
+                 *
+                 * We do not reload the request page because
+                 * the admin is being taken to the payment page.
+                 */
+
+                return;
+
+            }
+
+
+            /* =================================================
+               REJECTED REQUEST
+               ================================================= */
+
             showSuccess(
-
-                isApproving
-                    ? "Request Approved"
-                    : "Request Rejected",
-
-                `Request #${productId} has been ${action}d successfully.`
-
+                "Request Rejected",
+                `Request #${productId} has been rejected successfully.`
             );
 
 
             /*
              * Reload the complete admin request list
-             * after the status has been updated.
+             * after rejection.
              */
 
             await fetchRequests();
@@ -396,6 +478,10 @@ function AdminRequestHistory() {
 
     }
 
+
+    /* =========================================================
+       MAIN PAGE
+       ========================================================= */
 
     return (
 

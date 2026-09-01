@@ -1,8 +1,21 @@
 package com.infosys.procurement.enums;
 
 public enum PaymentMode {
-    NEFT,
-    RTGS,
-    IMPS,
-    UPI
+
+    CASH,
+
+    CHEQUE,
+
+//    NEFT,
+//
+//    RTGS,
+
+    CREDIT_CARD,
+
+    DEBIT_CARD,
+
+    UPI,
+
+    SCANNER
+
 }

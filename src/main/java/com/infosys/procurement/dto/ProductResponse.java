@@ -23,6 +23,10 @@ public class ProductResponse {
 
     private String category;
 
+    private Long supplierId;
+
+    private String supplierName;
+
     private BigDecimal pricePerProduct;
 
     private Integer quantity;

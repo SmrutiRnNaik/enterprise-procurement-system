@@ -6,27 +6,23 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 public class ProductRequest {
 
-    @NotBlank(message = "Product name is required.")
-    private String productName;
+    /*
+     * Product is selected from the product catalog.
+     * Product name, price, category and supplier are
+     * obtained automatically by the backend.
+     */
+    @NotNull(message = "Catalog product ID is required.")
+    private Long catalogProductId;
 
     @NotNull(message = "User ID is required.")
     private Long userId;
 
     @NotNull(message = "Department ID is required.")
     private Long departmentId;
-
-    @NotNull(message = "Category ID is required.")
-    private Long categoryId;
-
-    @NotNull(message = "Price per product is required.")
-    @Positive(message = "Price per product must be greater than zero.")
-    private BigDecimal pricePerProduct;
 
     @NotNull(message = "Quantity is required.")
     @Positive(message = "Quantity must be greater than zero.")

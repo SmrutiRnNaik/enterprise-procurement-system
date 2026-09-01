@@ -73,7 +73,9 @@ function AdminSidebar() {
             <div className="sidebar-menu">
 
 
-                {/* Dashboard */}
+                {/* =================================================
+                    DASHBOARD
+                ================================================= */}
 
                 <NavLink
                     to="/admin-dashboard"
@@ -93,7 +95,9 @@ function AdminSidebar() {
                 </NavLink>
 
 
-                {/* Request History */}
+                {/* =================================================
+                    REQUEST HISTORY
+                ================================================= */}
 
                 <NavLink
                     to="/admin-request-history"
@@ -112,6 +116,29 @@ function AdminSidebar() {
 
                 </NavLink>
 
+
+                {/* =================================================
+                    PAYMENT HISTORY
+                ================================================= */}
+
+                <NavLink
+                    to="/admin-payment-history"
+                    className={({ isActive }) =>
+                        `sidebar-link ${
+                            isActive ? "active" : ""
+                        }`
+                    }
+                >
+
+                    <i className="bi bi-credit-card"></i>
+
+                    <span>
+                        Payment History
+                    </span>
+
+                </NavLink>
+
+
             </div>
 
 
@@ -121,6 +148,8 @@ function AdminSidebar() {
 
             <div className="sidebar-footer">
 
+
+                {/* USER */}
 
                 <div className="sidebar-user">
 
@@ -153,6 +182,8 @@ function AdminSidebar() {
                 </div>
 
 
+                {/* LOGOUT */}
+
                 <button
                     type="button"
                     className="logout-button"
@@ -166,6 +197,7 @@ function AdminSidebar() {
                     </span>
 
                 </button>
+
 
             </div>
 

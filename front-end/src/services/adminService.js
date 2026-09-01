@@ -51,3 +51,33 @@ export const downloadAdminHistory = (
     );
 
 };
+
+
+/* =========================================================
+   GET ADMIN PAYMENT HISTORY
+   ========================================================= */
+
+export const getAdminPaymentHistory = (
+    adminId
+) => {
+
+    return axios.get(
+        `${BASE_URL}/payments/admin/${adminId}/history`
+    );
+
+};
+
+/* =========================================================
+   COMPLETE PAYMENT
+   ========================================================= */
+
+export const completePayment = (
+    paymentData
+) => {
+
+    return axios.post(
+        `${BASE_URL}/payments`,
+        paymentData
+    );
+
+};

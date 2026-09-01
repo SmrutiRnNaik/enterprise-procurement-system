@@ -1,12 +1,43 @@
 import { Routes, Route } from "react-router-dom";
 
+
+/* =========================================================
+   USER PAGES
+   ========================================================= */
+
 import Register from "./pages/Register";
 import Login from "./pages/login";
 import Dashboard from "./pages/Dashboard";
 import RaiseRequest from "./pages/RaiseRequest";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminRequestHistory from "./components/AdminRequestHistory";
+
+
+/* =========================================================
+   USER COMPONENTS
+   ========================================================= */
+
 import RequestHistory from "./components/RequestHistory";
+
+
+/* =========================================================
+   ADMIN PAGES
+   ========================================================= */
+
+import AdminDashboard from "./pages/AdminDashboard";
+
+
+/* =========================================================
+   ADMIN COMPONENTS
+   ========================================================= */
+
+import AdminRequestHistory from "./components/AdminRequestHistory";
+import AdminPaymentHistory from "./components/AdminPaymentHistory";
+
+
+/* =========================================================
+   PAYMENT PAGE
+   ========================================================= */
+
+import PaymentPage from "./pages/PaymentPage";
 
 
 function App() {
@@ -74,15 +105,39 @@ function App() {
                 path="/admin-dashboard"
                 element={<AdminDashboard />}
             />
+
+
+            {/* =================================================
+                ADMIN REQUEST HISTORY
+            ================================================= */}
+
             <Route
                 path="/admin-request-history"
                 element={<AdminRequestHistory />}
             />
 
 
-        </Routes>
+            {/* =================================================
+                ADMIN PAYMENT HISTORY
+            ================================================= */}
 
-        
+            <Route
+                path="/admin-payment-history"
+                element={<AdminPaymentHistory />}
+            />
+
+
+            {/* =================================================
+                PAYMENT
+            ================================================= */}
+
+            <Route
+                path="/payment"
+                element={<PaymentPage />}
+            />
+
+
+        </Routes>
 
     );
 

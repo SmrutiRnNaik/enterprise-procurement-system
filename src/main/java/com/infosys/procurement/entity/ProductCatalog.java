@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "category")
+@ToString(exclude = {"category", "supplier"})
 @JsonIgnoreProperties({
         "hibernateLazyInitializer",
         "handler"
@@ -36,14 +36,12 @@ public class ProductCatalog {
     @Column(name = "catalog_product_id")
     private Long catalogProductId;
 
-
     @Column(
             name = "product_name",
             nullable = false,
             length = 150
     )
     private String productName;
-
 
     @Column(
             name = "price",
@@ -53,7 +51,6 @@ public class ProductCatalog {
     )
     private BigDecimal price;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "category_id",
@@ -61,4 +58,14 @@ public class ProductCatalog {
     )
     private Category category;
 
+    /*
+     * Every catalog product is associated
+     * with its designated supplier.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "supplier_id",
+            nullable = false
+    )
+    private Supplier supplier;
 }
