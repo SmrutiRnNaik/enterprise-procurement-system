@@ -77,21 +77,12 @@ public class ProductServiceImpl implements ProductService {
     public RequestResponse<ProductResponse> raiseRequest(
             ProductRequest request) {
 
-        /* =====================================================
-           FIND USER
-           ===================================================== */
-
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found."
                         )
                 );
-
-
-        /* =====================================================
-           FIND DEPARTMENT
-           ===================================================== */
 
         Department department =
                 departmentRepository.findById(
@@ -103,11 +94,6 @@ public class ProductServiceImpl implements ProductService {
                                 )
                         );
 
-
-        /* =====================================================
-           FIND PRODUCT FROM CATALOG
-           ===================================================== */
-
         ProductCatalog catalogProduct =
                 productCatalogRepository.findById(
                                 request.getCatalogProductId()
@@ -118,14 +104,8 @@ public class ProductServiceImpl implements ProductService {
                                 )
                         );
 
-
-        /* =====================================================
-           GET CATEGORY FROM CATALOG
-           ===================================================== */
-
         Category category =
                 catalogProduct.getCategory();
-
 
         if (category == null) {
 
@@ -134,14 +114,8 @@ public class ProductServiceImpl implements ProductService {
             );
         }
 
-
-        /* =====================================================
-           GET SUPPLIER FROM CATALOG
-           ===================================================== */
-
         Supplier supplier =
                 catalogProduct.getSupplier();
-
 
         if (supplier == null) {
 
@@ -149,11 +123,6 @@ public class ProductServiceImpl implements ProductService {
                     "Supplier is not configured for this product."
             );
         }
-
-
-        /* =====================================================
-           VERIFY SUPPLIER IS ACTIVE
-           ===================================================== */
 
         if (supplier.getStatus() == null ||
                 !"ACTIVE".equals(
@@ -165,73 +134,31 @@ public class ProductServiceImpl implements ProductService {
             );
         }
 
-
-        /* =====================================================
-           CREATE PRODUCT REQUEST
-           ===================================================== */
-
         Product product = new Product();
 
-
-        /*
-         * Product name comes from ProductCatalog.
-         */
         product.setProductName(
                 catalogProduct.getProductName()
         );
 
-
-        /*
-         * User comes from logged-in/user request.
-         */
         product.setUser(user);
 
-
-        /*
-         * Department comes from request.
-         */
         product.setDepartment(department);
 
-
-        /*
-         * Category comes automatically from catalog.
-         */
         product.setCategory(category);
 
-
-        /*
-         * Supplier comes automatically from catalog.
-         */
         product.setSupplier(supplier);
 
-
-        /*
-         * Price comes automatically from catalog.
-         */
         product.setPricePerProduct(
                 catalogProduct.getPrice()
         );
 
-
-        /*
-         * Quantity comes from user.
-         */
         product.setQuantity(
                 request.getQuantity()
         );
 
-
-        /*
-         * Description comes from user.
-         */
         product.setDescription(
                 request.getDescription()
         );
-
-
-        /* =====================================================
-           CALCULATE TOTAL PRICE
-           ===================================================== */
 
         BigDecimal totalPrice =
                 catalogProduct.getPrice()
@@ -243,15 +170,9 @@ public class ProductServiceImpl implements ProductService {
 
         product.setTotalPrice(totalPrice);
 
-
-        /* =====================================================
-           SET INITIAL STATUS
-           ===================================================== */
-
         product.setStatus(
                 ProductStatus.PENDING_APPROVAL
         );
-
 
         LocalDateTime now =
                 LocalDateTime.now();
@@ -260,18 +181,8 @@ public class ProductServiceImpl implements ProductService {
 
         product.setUpdatedDate(now);
 
-
-        /* =====================================================
-           SAVE REQUEST
-           ===================================================== */
-
         Product savedProduct =
                 productRepository.save(product);
-
-
-        /* =====================================================
-           NOTIFY ADMIN
-           ===================================================== */
 
         Admin admin =
                 adminRepository.findById(1L)
@@ -280,7 +191,6 @@ public class ProductServiceImpl implements ProductService {
                                         "Admin not found."
                                 )
                         );
-
 
         try {
 
@@ -296,7 +206,6 @@ public class ProductServiceImpl implements ProductService {
              * request creation.
              */
         }
-
 
         return new RequestResponse<>(
                 "Request submitted successfully.",
@@ -321,6 +230,8 @@ public class ProductServiceImpl implements ProductService {
 
         /* =====================================================
            USER HISTORY
+
+           UNCHANGED
            ===================================================== */
 
         if ("user".equalsIgnoreCase(type)) {
@@ -332,7 +243,6 @@ public class ProductServiceImpl implements ProductService {
                 );
             }
 
-
             userRepository.findById(id)
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
@@ -340,13 +250,11 @@ public class ProductServiceImpl implements ProductService {
                             )
                     );
 
-
             products =
                     productRepository
                             .findByUser_UserIdOrderByCreatedDateDesc(
                                     id
                             );
-
 
             message =
                     "User request history fetched successfully.";
@@ -355,6 +263,8 @@ public class ProductServiceImpl implements ProductService {
 
         /* =====================================================
            ADMIN HISTORY
+
+           UNCHANGED
 
            Includes:
 
@@ -369,9 +279,40 @@ public class ProductServiceImpl implements ProductService {
                     productRepository
                             .findAllByOrderByCreatedDateDesc();
 
-
             message =
                     "Admin request history fetched successfully.";
+        }
+
+
+        /* =====================================================
+           SUPPLIER HISTORY
+
+           APPROVED REQUESTS ONLY
+           ===================================================== */
+
+        else if ("supplier".equalsIgnoreCase(type)) {
+
+            if (id == null) {
+
+                throw new IllegalArgumentException(
+                        "Supplier id is required when type is supplier."
+                );
+            }
+
+            products =
+                    productRepository
+                            .findBySupplier_SupplierIdOrderByCreatedDateDesc(
+                                    id
+                            )
+                            .stream()
+                            .filter(product ->
+                                    product.getStatus() ==
+                                            ProductStatus.APPROVED
+                            )
+                            .toList();
+
+            message =
+                    "Approved supplier requests fetched successfully.";
         }
 
 
@@ -382,7 +323,7 @@ public class ProductServiceImpl implements ProductService {
         else {
 
             throw new IllegalArgumentException(
-                    "Invalid type. Use user or admin."
+                    "Invalid type. Use user, admin or supplier."
             );
         }
 
@@ -413,13 +354,11 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products =
                 getProductsForHistory(type, id);
 
-
         switch (format.toLowerCase()) {
 
             case "csv":
 
                 return generateCsv(products);
-
 
             case "xlsx":
 
@@ -427,11 +366,9 @@ public class ProductServiceImpl implements ProductService {
 
                 return generateExcel(products);
 
-
             case "pdf":
 
                 return generatePdf(products);
-
 
             default:
 
@@ -453,6 +390,8 @@ public class ProductServiceImpl implements ProductService {
 
         /* =====================================================
            USER DOWNLOAD
+
+           UNCHANGED
            ===================================================== */
 
         if ("user".equalsIgnoreCase(type)) {
@@ -464,14 +403,12 @@ public class ProductServiceImpl implements ProductService {
                 );
             }
 
-
             userRepository.findById(id)
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
                                     "User not found."
                             )
                     );
-
 
             return productRepository
                     .findByUser_UserIdOrderByCreatedDateDesc(
@@ -482,6 +419,8 @@ public class ProductServiceImpl implements ProductService {
 
         /* =====================================================
            ADMIN DOWNLOAD
+
+           UNCHANGED
            ===================================================== */
 
         if ("admin".equalsIgnoreCase(type)) {
@@ -491,8 +430,36 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
+        /* =====================================================
+           SUPPLIER DOWNLOAD
+
+           APPROVED REQUESTS ONLY
+           ===================================================== */
+
+        if ("supplier".equalsIgnoreCase(type)) {
+
+            if (id == null) {
+
+                throw new IllegalArgumentException(
+                        "Supplier id is required when type is supplier."
+                );
+            }
+
+            return productRepository
+                    .findBySupplier_SupplierIdOrderByCreatedDateDesc(
+                            id
+                    )
+                    .stream()
+                    .filter(product ->
+                            product.getStatus() ==
+                                    ProductStatus.APPROVED
+                    )
+                    .toList();
+        }
+
+
         throw new IllegalArgumentException(
-                "Invalid type. Use user or admin."
+                "Invalid type. Use user, admin or supplier."
         );
     }
 
@@ -570,7 +537,6 @@ public class ProductServiceImpl implements ProductService {
         StringBuilder csv =
                 new StringBuilder();
 
-
         csv.append(
                 "Product ID,"
                         + "Product Name,"
@@ -585,13 +551,11 @@ public class ProductServiceImpl implements ProductService {
                         + "Created Date\n"
         );
 
-
         for (Product product : products) {
 
             csv.append(
                     product.getProductId()
             ).append(",");
-
 
             csv.append(
                     escapeCsv(
@@ -599,13 +563,11 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
-
             csv.append(
                     escapeCsv(
                             product.getUser().getName()
                     )
             ).append(",");
-
 
             csv.append(
                     escapeCsv(
@@ -614,14 +576,12 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
-
             csv.append(
                     escapeCsv(
                             product.getCategory()
                                     .getCategoryName()
                     )
             ).append(",");
-
 
             csv.append(
                     escapeCsv(
@@ -630,32 +590,26 @@ public class ProductServiceImpl implements ProductService {
                     )
             ).append(",");
 
-
             csv.append(
                     product.getQuantity()
             ).append(",");
-
 
             csv.append(
                     product.getPricePerProduct()
             ).append(",");
 
-
             csv.append(
                     product.getTotalPrice()
             ).append(",");
-
 
             csv.append(
                     product.getStatus()
             ).append(",");
 
-
             csv.append(
                     product.getCreatedDate()
             ).append("\n");
         }
-
 
         return csv.toString()
                 .getBytes(StandardCharsets.UTF_8);
@@ -674,7 +628,6 @@ public class ProductServiceImpl implements ProductService {
             return "";
         }
 
-
         if (value.contains(",")
                 || value.contains("\"")
                 || value.contains("\n")) {
@@ -686,7 +639,6 @@ public class ProductServiceImpl implements ProductService {
             )
                     + "\"";
         }
-
 
         return value;
     }
@@ -709,12 +661,10 @@ public class ProductServiceImpl implements ProductService {
 
         ) {
 
-
             Sheet sheet =
                     workbook.createSheet(
                             "Procurement Requests"
                     );
-
 
             String[] headers = {
 
@@ -732,10 +682,8 @@ public class ProductServiceImpl implements ProductService {
 
             };
 
-
             Row header =
                     sheet.createRow(0);
-
 
             for (
                     int i = 0;
@@ -749,9 +697,7 @@ public class ProductServiceImpl implements ProductService {
                         );
             }
 
-
             int rowNumber = 1;
-
 
             for (Product product : products) {
 
@@ -760,24 +706,20 @@ public class ProductServiceImpl implements ProductService {
                                 rowNumber++
                         );
 
-
                 row.createCell(0)
                         .setCellValue(
                                 product.getProductId()
                         );
-
 
                 row.createCell(1)
                         .setCellValue(
                                 product.getProductName()
                         );
 
-
                 row.createCell(2)
                         .setCellValue(
                                 product.getUser().getName()
                         );
-
 
                 row.createCell(3)
                         .setCellValue(
@@ -785,13 +727,11 @@ public class ProductServiceImpl implements ProductService {
                                         .getDepartmentName()
                         );
 
-
                 row.createCell(4)
                         .setCellValue(
                                 product.getCategory()
                                         .getCategoryName()
                         );
-
 
                 row.createCell(5)
                         .setCellValue(
@@ -799,12 +739,10 @@ public class ProductServiceImpl implements ProductService {
                                         .getSupplierName()
                         );
 
-
                 row.createCell(6)
                         .setCellValue(
                                 product.getQuantity()
                         );
-
 
                 row.createCell(7)
                         .setCellValue(
@@ -812,13 +750,11 @@ public class ProductServiceImpl implements ProductService {
                                         .doubleValue()
                         );
 
-
                 row.createCell(8)
                         .setCellValue(
                                 product.getTotalPrice()
                                         .doubleValue()
                         );
-
 
                 row.createCell(9)
                         .setCellValue(
@@ -826,14 +762,12 @@ public class ProductServiceImpl implements ProductService {
                                         .toString()
                         );
 
-
                 row.createCell(10)
                         .setCellValue(
                                 product.getCreatedDate()
                                         .toString()
                         );
             }
-
 
             for (
                     int i = 0;
@@ -844,12 +778,9 @@ public class ProductServiceImpl implements ProductService {
                 sheet.autoSizeColumn(i);
             }
 
-
             workbook.write(outputStream);
 
-
             return outputStream.toByteArray();
-
 
         } catch (Exception e) {
 
@@ -873,28 +804,23 @@ public class ProductServiceImpl implements ProductService {
                         new ByteArrayOutputStream()
         ) {
 
-
             Document document =
                     new Document(
                             PageSize.A4.rotate()
                     );
-
 
             PdfWriter.getInstance(
                     document,
                     outputStream
             );
 
-
             document.open();
-
 
             document.add(
                     new Paragraph(
                             "Procurement Request Report"
                     )
             );
-
 
             float[] columnWidths = {
 
@@ -912,12 +838,10 @@ public class ProductServiceImpl implements ProductService {
 
             };
 
-
             PdfPTable table =
                     new PdfPTable(
                             columnWidths
                     );
-
 
             table.setWidthPercentage(100);
 
@@ -926,7 +850,6 @@ public class ProductServiceImpl implements ProductService {
             table.setSplitLate(false);
 
             table.setHeaderRows(1);
-
 
             String[] headers = {
 
@@ -944,7 +867,6 @@ public class ProductServiceImpl implements ProductService {
 
             };
 
-
             for (String header : headers) {
 
                 PdfPCell cell =
@@ -955,7 +877,6 @@ public class ProductServiceImpl implements ProductService {
                 table.addCell(cell);
             }
 
-
             for (Product product : products) {
 
                 table.addCell(
@@ -964,34 +885,28 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-
                 table.addCell(
                         product.getProductName()
                 );
 
-
                 table.addCell(
                         product.getUser().getName()
                 );
-
 
                 table.addCell(
                         product.getDepartment()
                                 .getDepartmentName()
                 );
 
-
                 table.addCell(
                         product.getCategory()
                                 .getCategoryName()
                 );
 
-
                 table.addCell(
                         product.getSupplier()
                                 .getSupplierName()
                 );
-
 
                 table.addCell(
                         String.valueOf(
@@ -999,13 +914,11 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-
                 table.addCell(
                         String.valueOf(
                                 product.getPricePerProduct()
                         )
                 );
-
 
                 table.addCell(
                         String.valueOf(
@@ -1013,12 +926,10 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-
                 table.addCell(
                         product.getStatus()
                                 .toString()
                 );
-
 
                 table.addCell(
                         product.getCreatedDate()
@@ -1026,15 +937,11 @@ public class ProductServiceImpl implements ProductService {
                 );
             }
 
-
             document.add(table);
-
 
             document.close();
 
-
             return outputStream.toByteArray();
-
 
         } catch (Exception e) {
 

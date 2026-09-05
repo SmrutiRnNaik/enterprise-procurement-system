@@ -8,7 +8,11 @@ import { Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/login";
 import Dashboard from "./pages/Dashboard";
+import SupplierLogin from "./pages/SupplierLogin";
+import SupplierRequests from "./pages/SupplierRequests";
+import SupplierDashboard from "./pages/SupplierDashboard";
 import RaiseRequest from "./pages/RaiseRequest";
+import SupplierPaymentHistory from "./pages/SupplierPaymentHistory";
 
 
 /* =========================================================
@@ -58,12 +62,22 @@ function App() {
 
 
             {/* =================================================
-                LOGIN
+                EMPLOYEE LOGIN
             ================================================= */}
 
             <Route
                 path="/login"
                 element={<Login />}
+            />
+
+
+            {/* =================================================
+                SUPPLIER LOGIN
+            ================================================= */}
+
+            <Route
+                path="/supplier-login"
+                element={<SupplierLogin />}
             />
 
 
@@ -74,6 +88,16 @@ function App() {
             <Route
                 path="/dashboard"
                 element={<Dashboard />}
+            />
+
+
+            {/* =================================================
+                SUPPLIER DASHBOARD
+            ================================================= */}
+
+            <Route
+                path="/supplier-dashboard"
+                element={<SupplierDashboard />}
             />
 
 
@@ -134,6 +158,16 @@ function App() {
             <Route
                 path="/payment"
                 element={<PaymentPage />}
+            />
+
+            <Route
+                path="/supplier-requests"
+                element={<SupplierRequests />}
+            />
+
+            <Route
+                path="/supplier-payment-history"
+                element={<SupplierPaymentHistory />}
             />
 
 

@@ -1,24 +1,21 @@
-function StatsCard({ title, value, icon, color }) {
-
-    const colorClass = `stats-${color}`;
+function StatsCard({ title, value, icon, color, variant }) {
+    const actualColor = color || variant || "primary";
+    const colorClass = `stats-${actualColor}`;
 
     const descriptions = {
-        primary: "All procurement requests",
-        warning: "Awaiting approval",
-        success: "Successfully approved",
+        primary: "Procurement activity",
+        warning: "Pending supplier action",
+        success: "Successfully completed",
         danger: "Requests declined"
     };
 
     return (
-
         <div className={`stats-card ${colorClass}`}>
 
             <div className="stats-card-top">
 
                 <div className="stats-card-icon">
-
                     <i className={`bi bi-${icon}`}></i>
-
                 </div>
 
                 <span className="stats-card-label">
@@ -27,18 +24,14 @@ function StatsCard({ title, value, icon, color }) {
 
             </div>
 
-
             <div className="stats-card-value">
-
                 {value}
-
             </div>
-
 
             <div className="stats-card-bottom">
 
                 <span>
-                    {descriptions[color] || "Procurement activity"}
+                    {descriptions[actualColor] || "Procurement activity"}
                 </span>
 
                 <i className="bi bi-arrow-up-right"></i>
@@ -46,9 +39,7 @@ function StatsCard({ title, value, icon, color }) {
             </div>
 
         </div>
-
     );
-
 }
 
 export default StatsCard;

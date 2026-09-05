@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-import { loginUser } from "../services/authService";
+import axios from "axios";
+
 import {
     showSuccess,
     showError
@@ -10,13 +11,13 @@ import {
 import loginImage from "../assets/login.png";
 
 
-function Login() {
+function SupplierLogin() {
 
     const navigate = useNavigate();
 
 
     const [form, setForm] = useState({
-        name: "",
+        email: "",
         password: ""
     });
 
@@ -43,7 +44,7 @@ function Login() {
 
 
     /* =========================================================
-       LOGIN
+       SUPPLIER LOGIN
        ========================================================= */
 
     const handleSubmit = async (e) => {
@@ -54,9 +55,12 @@ function Login() {
 
         try {
 
-            const response = await loginUser(form);
+            const response = await axios.post(
+                "http://localhost:8080/api/suppliers/login",
+                form
+            );
 
-            const user = response.data;
+            const supplier = response.data;
 
 
             /* =================================================
@@ -65,60 +69,42 @@ function Login() {
 
             localStorage.setItem(
                 "userId",
-                user.userId
+                supplier.userId
             );
 
             localStorage.setItem(
                 "username",
-                user.name
+                supplier.name
             );
 
             localStorage.setItem(
                 "email",
-                user.email
+                supplier.email
             );
 
             localStorage.setItem(
                 "designation",
-                user.designation
+                supplier.designation
+            );
+
+            localStorage.setItem(
+                "role",
+                supplier.role
             );
 
 
             /*
-             * Admins do not have a department.
-             * Avoid storing the string "null".
+             * Suppliers do not have a department.
              */
 
-            if (user.departmentId !== null &&
-                user.departmentId !== undefined) {
-
-                localStorage.setItem(
-                    "departmentId",
-                    user.departmentId
-                );
-
-            } else {
-
-                localStorage.removeItem(
-                    "departmentId"
-                );
-
-            }
-
-
-            /*
-             * Store role.
-             */
-
-            localStorage.setItem(
-                "role",
-                user.role
+            localStorage.removeItem(
+                "departmentId"
             );
 
 
             /* =================================================
                REMEMBER ME
-            ================================================= */
+               ================================================= */
 
             if (rememberMe) {
 
@@ -138,27 +124,19 @@ function Login() {
 
             /* =================================================
                SUCCESS MESSAGE
-            ================================================= */
+               ================================================= */
 
             showSuccess(
                 "Login Successful",
-                `Welcome back, ${user.name}!`
+                `Welcome back, ${supplier.name}!`
             );
 
 
             /* =================================================
-               ROLE-BASED REDIRECT
-            ================================================= */
+               SUPPLIER DASHBOARD
+               ================================================= */
 
-            if (user.role === "ADMIN") {
-
-                navigate("/admin-dashboard");
-
-            } else {
-
-                navigate("/dashboard");
-
-            }
+            navigate("/supplier-dashboard");
 
 
         } catch (error) {
@@ -167,7 +145,7 @@ function Login() {
                 error.response?.data?.message ||
                 error.response?.data ||
                 error.message ||
-                "Invalid username or password.";
+                "Invalid email or password.";
 
 
             showError(
@@ -193,7 +171,7 @@ function Login() {
 
                 {/* =================================================
                     LEFT IMAGE PANEL
-                ================================================= */}
+                   ================================================= */}
 
                 <section className="login-visual">
 
@@ -208,7 +186,7 @@ function Login() {
 
                 {/* =================================================
                     RIGHT LOGIN PANEL
-                ================================================= */}
+                   ================================================= */}
 
                 <section className="login-form-panel">
 
@@ -217,12 +195,12 @@ function Login() {
 
                         {/* =================================================
                             HEADER
-                        ================================================= */}
+                           ================================================= */}
 
                         <div className="login-form-header">
 
                             <span className="form-step">
-                                EMPLOYEE PORTAL
+                                SUPPLIER PORTAL
                             </span>
 
                             <h2>
@@ -230,7 +208,7 @@ function Login() {
                             </h2>
 
                             <p>
-                                Please enter your details to sign in
+                                Sign in to manage your procurement orders
                             </p>
 
                         </div>
@@ -238,31 +216,31 @@ function Login() {
 
                         {/* =================================================
                             LOGIN FORM
-                        ================================================= */}
+                           ================================================= */}
 
                         <form onSubmit={handleSubmit}>
 
 
-                            {/* Username */}
+                            {/* Email */}
 
                             <div className="auth-field">
 
-                                <label htmlFor="name">
-                                    Username
+                                <label htmlFor="email">
+                                    Email Address
                                 </label>
 
                                 <div className="auth-input-wrapper">
 
-                                    <i className="bi bi-person"></i>
+                                    <i className="bi bi-envelope"></i>
 
                                     <input
-                                        id="name"
-                                        type="text"
-                                        name="name"
-                                        value={form.name}
+                                        id="email"
+                                        type="email"
+                                        name="email"
+                                        value={form.email}
                                         onChange={handleChange}
-                                        placeholder="Enter your username"
-                                        autoComplete="username"
+                                        placeholder="Enter your email address"
+                                        autoComplete="email"
                                         required
                                     />
 
@@ -403,51 +381,29 @@ function Login() {
 
 
                         {/* =================================================
-                            REGISTER
-                        ================================================= */}
+                            EMPLOYEE LOGIN
+                           ================================================= */}
 
-                       <div className="login-divider">
+                        <div className="login-divider">
 
                             <span>
-                                Account Access
+                                Are you an employee?
                             </span>
 
                         </div>
 
 
-                        <div
-                            className="d-flex justify-content-center align-items-center gap-3 flex-wrap"
+                        <Link
+                            to="/login"
+                            className="login-register-link"
                         >
 
-                            <Link
-                                to="/"
-                                className="login-register-link"
-                            >
+                            Employee Login
 
-                                Create an account
+                            <i className="bi bi-arrow-right ms-2"></i>
 
-                                <i className="bi bi-arrow-right ms-2"></i>
+                        </Link>
 
-                            </Link>
-
-
-                            <span className="text-muted">
-                                |
-                            </span>
-
-
-                            <Link
-                                to="/supplier-login"
-                                className="login-register-link"
-                            >
-
-                                Supplier Login
-
-                                <i className="bi bi-arrow-right ms-2"></i>
-
-                            </Link>
-
-                        </div>
 
                     </div>
 
@@ -462,4 +418,4 @@ function Login() {
 }
 
 
-export default Login;
+export default SupplierLogin;

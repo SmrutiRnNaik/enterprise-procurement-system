@@ -1,11 +1,19 @@
 import Swal from "sweetalert2";
 
 
+/* =========================================================
+   MINIMAL CENTERED NOTIFICATION
+   ========================================================= */
+
 const Toast = Swal.mixin({
 
     toast: true,
 
-    position: "top-end",
+    /*
+     * Top-center keeps the notification visible
+     * without covering the payment form.
+     */
+    position: "top",
 
     showConfirmButton: false,
 
@@ -16,6 +24,8 @@ const Toast = Swal.mixin({
     background: "#ffffff",
 
     color: "#111111",
+
+    width: "380px",
 
     customClass: {
         popup: "infy-toast"
@@ -47,7 +57,7 @@ export const showSuccess = (
     text = ""
 ) => {
 
-    Toast.fire({
+    return Toast.fire({
 
         icon: "success",
 
@@ -69,7 +79,7 @@ export const showError = (
     text = ""
 ) => {
 
-    Toast.fire({
+    return Toast.fire({
 
         icon: "error",
 
@@ -93,7 +103,7 @@ export const showInfo = (
     text = ""
 ) => {
 
-    Toast.fire({
+    return Toast.fire({
 
         icon: "info",
 
@@ -115,7 +125,7 @@ export const showWarning = (
     text = ""
 ) => {
 
-    Toast.fire({
+    return Toast.fire({
 
         icon: "warning",
 
@@ -134,24 +144,12 @@ export const showWarning = (
    CONFIRMATION
    =========================================================
 
-   confirmText defaults to "Logout" so existing logout
-   confirmation continues to work.
+   Used for actions such as:
 
-   Example:
-
-   showConfirm(
-       "Approve Request?",
-       "Are you sure?",
-       "Approve"
-   );
-
-   Example:
-
-   showConfirm(
-       "Reject Request?",
-       "Are you sure?",
-       "Reject"
-   );
+   - Logout
+   - Approve Request
+   - Reject Request
+   - Complete Payment
 
    ========================================================= */
 

@@ -335,33 +335,29 @@ function RaiseRequest() {
 
 
         /*
-         * ProductRequest currently expects:
+         * ProductRequest expects:
          *
-         * productName
+         * catalogProductId
          * userId
          * departmentId
-         * categoryId
-         * pricePerProduct
          * quantity
          * description
+         *
+         * Product name, price, category and supplier
+         * are obtained automatically by the backend
+         * from the selected catalog product.
          */
 
         const payload = {
 
-            productName:
-                selectedProduct.productName,
+            catalogProductId:
+                Number(selectedProduct.catalogProductId),
 
             userId:
                 Number(userId),
 
             departmentId:
                 Number(departmentId),
-
-            categoryId:
-                Number(categoryId),
-
-            pricePerProduct:
-                selectedProduct.price,
 
             quantity,
 

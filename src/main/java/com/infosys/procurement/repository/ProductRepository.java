@@ -29,6 +29,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
     List<Product> findAllByOrderByCreatedDateDesc();
 
+    /*
+     * Returns procurement requests assigned
+     * to a specific supplier.
+     */
+    List<Product> findBySupplier_SupplierIdOrderByCreatedDateDesc(
+            Long supplierId
+    );
+
     Long countByUser_UserId(Long userId);
 
     Long countByUser_UserIdAndStatus(
