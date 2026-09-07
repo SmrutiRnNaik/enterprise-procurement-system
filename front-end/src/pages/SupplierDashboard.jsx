@@ -1,26 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 import SupplierSidebar from "../components/SupplierSidebar";
 import StatsCard from "../components/StatsCard";
 
+import {
+    showSupplierSuccess,
+    showSupplierError,
+    showSupplierInfo,
+    showSupplierConfirm
+} from "../utils/notifications";
+
 import "../Supplier.css";
 
+
 const BASE_URL = "http://localhost:8080/api";
+
 
 const SupplierDashboard = () => {
 
     const navigate = useNavigate();
 
+
     const [requests, setRequests] = useState([]);
-    const [orderStatuses, setOrderStatuses] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [updatingId, setUpdatingId] = useState(null);
+
+    const [orderStatuses, setOrderStatuses] =
+        useState({});
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [updatingId, setUpdatingId] =
+        useState(null);
 
     const [activeChartSegment, setActiveChartSegment] =
         useState(null);
+
 
     const supplierId =
         localStorage.getItem("userId");
@@ -28,13 +44,16 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        LOAD SUPPLIER REQUESTS
-       ========================================================= */
+    ========================================================= */
 
     useEffect(() => {
 
         if (!supplierId) {
+
             navigate("/supplier-login");
+
             return;
+
         }
 
         fetchSupplierRequests();
@@ -48,9 +67,12 @@ const SupplierDashboard = () => {
 
             setLoading(true);
 
-            const response = await axios.get(
-                `${BASE_URL}/products/history?type=supplier&id=${supplierId}`
-            );
+
+            const response =
+                await axios.get(
+                    `${BASE_URL}/products/history?type=supplier&id=${supplierId}`
+                );
+
 
             const data =
                 response.data?.data || [];
@@ -68,7 +90,9 @@ const SupplierDashboard = () => {
                 );
 
 
-            setRequests(approvedRequests);
+            setRequests(
+                approvedRequests
+            );
 
 
             /*
@@ -81,6 +105,7 @@ const SupplierDashboard = () => {
 
             const statusResults =
                 await Promise.all(
+
                     approvedRequests.map(
                         async (request) => {
 
@@ -91,7 +116,9 @@ const SupplierDashboard = () => {
                                         `${BASE_URL}/orders/status/${request.productId}`
                                     );
 
+
                                 return {
+
                                     productId:
                                         request.productId,
 
@@ -100,21 +127,26 @@ const SupplierDashboard = () => {
                                             ?.data
                                             ?.orderStatus ||
                                         null
+
                                 };
 
                             } catch (error) {
 
                                 return {
+
                                     productId:
                                         request.productId,
 
-                                    status: null
+                                    status:
+                                        null
+
                                 };
 
                             }
 
                         }
                     )
+
                 );
 
 
@@ -132,7 +164,9 @@ const SupplierDashboard = () => {
             );
 
 
-            setOrderStatuses(statusMap);
+            setOrderStatuses(
+                statusMap
+            );
 
 
         } catch (error) {
@@ -143,22 +177,11 @@ const SupplierDashboard = () => {
             );
 
 
-            Swal.fire({
-
-                icon: "error",
-
-                title:
-                    "Unable to Load Requests",
-
-                text:
-                    error.response?.data?.message ||
-                    "Could not fetch supplier request history.",
-
-                confirmButtonText:
-                    "OK"
-
-            });
-
+            showSupplierError(
+                "Unable to Load Requests",
+                error.response?.data?.message ||
+                "Could not fetch supplier request history."
+            );
 
         } finally {
 
@@ -171,17 +194,28 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        STATUS HELPERS
-       ========================================================= */
+    ========================================================= */
 
-    const formatStatus = (status) => {
+    const formatStatus = (
+        status
+    ) => {
 
         if (!status) {
+
             return "Pending / Not Started";
+
         }
 
+
         return status
-            .replace(/_/g, " ")
+
+            .replace(
+                /_/g,
+                " "
+            )
+
             .toLowerCase()
+
             .replace(
                 /\b\w/g,
                 (char) =>
@@ -191,30 +225,46 @@ const SupplierDashboard = () => {
     };
 
 
-    const getNextStatus = (currentStatus) => {
+    const getNextStatus = (
+        currentStatus
+    ) => {
 
         switch (currentStatus) {
 
             case null:
+
             case undefined:
+
                 return "ORDER_RECEIVED";
 
+
             case "ORDER_RECEIVED":
+
                 return "PACKED";
 
+
             case "PACKED":
+
                 return "SHIPPED";
 
+
             case "SHIPPED":
+
                 return "OUT_FOR_DELIVERY";
 
+
             case "OUT_FOR_DELIVERY":
+
                 return "DELIVERED";
 
+
             case "DELIVERED":
+
                 return null;
 
+
             default:
+
                 return "ORDER_RECEIVED";
 
         }
@@ -222,44 +272,57 @@ const SupplierDashboard = () => {
     };
 
 
-    const getSupplyStatus = (productId) => {
+    const getSupplyStatus = (
+        productId
+    ) => {
 
         const status =
-            orderStatuses[productId];
+            orderStatuses[
+                productId
+            ];
 
 
         if (!status) {
 
             return {
+
                 label:
                     "Pending / Not Started",
 
                 className:
                     "history-status pending"
+
             };
 
         }
 
 
-        if (status === "DELIVERED") {
+        if (
+            status ===
+            "DELIVERED"
+        ) {
 
             return {
+
                 label:
                     "Completed",
 
                 className:
                     "history-status approved"
+
             };
 
         }
 
 
         return {
+
             label:
                 "In Progress",
 
             className:
                 "history-status approved"
+
         };
 
     };
@@ -267,7 +330,7 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        ORDER STATUS UPDATE
-       ========================================================= */
+    ========================================================= */
 
     const updateOrderStatus = async (
         productId,
@@ -276,7 +339,9 @@ const SupplierDashboard = () => {
 
         try {
 
-            setUpdatingId(productId);
+            setUpdatingId(
+                productId
+            );
 
 
             await axios.put(
@@ -289,29 +354,28 @@ const SupplierDashboard = () => {
 
             setOrderStatuses(
                 (previous) => ({
+
                     ...previous,
+
                     [productId]:
                         orderStatus
+
                 })
             );
 
 
-            Swal.fire({
+            /*
+             * Supplier success is now a small
+             * top-center toast instead of a
+             * large centered popup.
+             */
 
-                icon: "success",
-
-                title:
-                    "Status Updated",
-
-                text:
-                    `Order status changed to ${formatStatus(
-                        orderStatus
-                    )}.`,
-
-                confirmButtonText:
-                    "OK"
-
-            });
+            showSupplierSuccess(
+                "Status Updated",
+                `Order status changed to ${formatStatus(
+                    orderStatus
+                )}.`
+            );
 
 
         } catch (error) {
@@ -322,26 +386,18 @@ const SupplierDashboard = () => {
             );
 
 
-            Swal.fire({
-
-                icon: "error",
-
-                title:
-                    "Update Failed",
-
-                text:
-                    error.response?.data?.message ||
-                    "Unable to update the order status.",
-
-                confirmButtonText:
-                    "OK"
-
-            });
+            showSupplierError(
+                "Update Failed",
+                error.response?.data?.message ||
+                "Unable to update the order status."
+            );
 
 
         } finally {
 
-            setUpdatingId(null);
+            setUpdatingId(
+                null
+            );
 
         }
 
@@ -364,57 +420,47 @@ const SupplierDashboard = () => {
             );
 
 
+        /* =====================================================
+           ALREADY DELIVERED
+        ===================================================== */
+
         if (!nextStatus) {
 
-            Swal.fire({
-
-                icon: "info",
-
-                title:
-                    "Order Completed",
-
-                text:
-                    "This order has already been delivered.",
-
-                confirmButtonText:
-                    "OK"
-
-            });
+            showSupplierInfo(
+                "Order Completed",
+                "This order has already been delivered."
+            );
 
             return;
+
         }
 
 
+        /* =====================================================
+           CONFIRM STATUS CHANGE
+        ===================================================== */
+
         const result =
-            await Swal.fire({
+            await showSupplierConfirm(
 
-                title:
-                    "Update Order Status",
+                "Update Order Status",
 
-                text:
-                    `Change status to ${formatStatus(
-                        nextStatus
-                    )}?`,
+                `Change status to ${formatStatus(
+                    nextStatus
+                )}?`,
 
-                icon:
-                    "question",
+                "Update"
 
-                showCancelButton:
-                    true,
-
-                confirmButtonText:
-                    "Update",
-
-                cancelButtonText:
-                    "Cancel",
-
-                reverseButtons:
-                    true
-
-            });
+            );
 
 
-        if (result.isConfirmed) {
+        /* =====================================================
+           CONFIRMED
+        ===================================================== */
+
+        if (
+            result.isConfirmed
+        ) {
 
             await updateOrderStatus(
                 request.productId,
@@ -428,7 +474,7 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        APPROVED REQUESTS
-       ========================================================= */
+    ========================================================= */
 
     const approvedRequests =
         requests;
@@ -436,7 +482,7 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        SUPPLIER STATISTICS
-       ========================================================= */
+    ========================================================= */
 
     const pendingCount =
         approvedRequests.filter(
@@ -456,10 +502,14 @@ const SupplierDashboard = () => {
                         request.productId
                     ];
 
+
                 return (
+
                     status &&
+
                     status !==
                         "DELIVERED"
+
                 );
 
             }
@@ -478,7 +528,7 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        FIRST FIVE ACTIVE REQUESTS
-       ========================================================= */
+    ========================================================= */
 
     /*
      * Only active approved requests are shown here.
@@ -495,46 +545,62 @@ const SupplierDashboard = () => {
 
     const firstFiveRequests =
         [...approvedRequests]
+
             .filter(
                 (request) =>
                     orderStatuses[
                         request.productId
-                    ] !== "DELIVERED"
+                    ] !==
+                    "DELIVERED"
             )
-            .sort((a, b) => {
 
-                if (
-                    a.createdDate &&
-                    b.createdDate
-                ) {
+            .sort(
+                (a, b) => {
+
+                    if (
+                        a.createdDate &&
+                        b.createdDate
+                    ) {
+
+                        return (
+
+                            new Date(
+                                a.createdDate
+                            ) -
+
+                            new Date(
+                                b.createdDate
+                            )
+
+                        );
+
+                    }
+
 
                     return (
-                        new Date(
-                            a.createdDate
+
+                        Number(
+                            a.productId
                         ) -
-                        new Date(
-                            b.createdDate
+
+                        Number(
+                            b.productId
                         )
+
                     );
 
                 }
+            )
 
-                return (
-                    Number(
-                        a.productId
-                    ) -
-                    Number(
-                        b.productId
-                    )
-                );
-
-            })
-            .slice(0, 5);
+            .slice(
+                0,
+                5
+            );
 
 
     /* =========================================================
        CHART DATA
-       ========================================================= */
+    ========================================================= */
 
     const totalOrders =
         pendingCount +
@@ -543,36 +609,64 @@ const SupplierDashboard = () => {
 
 
     const chartSegments = [
+
         {
-            key: "completed",
-            label: "Completed",
-            count: completedCount,
-            color: "#16945f"
+            key:
+                "completed",
+
+            label:
+                "Completed",
+
+            count:
+                completedCount,
+
+            color:
+                "#16945f"
         },
+
         {
-            key: "inProgress",
-            label: "In Progress",
-            count: inProgressCount,
-            color: "#315bea"
+            key:
+                "inProgress",
+
+            label:
+                "In Progress",
+
+            count:
+                inProgressCount,
+
+            color:
+                "#315bea"
         },
+
         {
-            key: "pending",
-            label: "Pending / Not Started",
-            count: pendingCount,
-            color: "#f4b400"
+            key:
+                "pending",
+
+            label:
+                "Pending / Not Started",
+
+            count:
+                pendingCount,
+
+            color:
+                "#f4b400"
         }
+
     ];
 
 
     /* =========================================================
        SVG ARC HELPERS
-       ========================================================= */
+    ========================================================= */
 
-    const chartCenter = 150;
+    const chartCenter =
+        150;
 
-    const chartRadius = 105;
+    const chartRadius =
+        105;
 
-    const chartStrokeWidth = 42;
+    const chartStrokeWidth =
+        42;
 
 
     const polarToCartesian = (
@@ -586,6 +680,7 @@ const SupplierDashboard = () => {
             (angleInDegrees - 90) *
             Math.PI /
             180;
+
 
         return {
 
@@ -632,7 +727,8 @@ const SupplierDashboard = () => {
 
 
         const largeArcFlag =
-            endAngle - startAngle <=
+            endAngle -
+                startAngle <=
             180
                 ? "0"
                 : "1";
@@ -641,16 +737,25 @@ const SupplierDashboard = () => {
         return [
 
             "M",
+
             start.x,
+
             start.y,
 
             "A",
+
             chartRadius,
+
             chartRadius,
+
             0,
+
             largeArcFlag,
+
             0,
+
             end.x,
+
             end.y
 
         ].join(" ");
@@ -660,17 +765,21 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        BUILD CHART SEGMENTS
-       ========================================================= */
+    ========================================================= */
 
-    let currentAngle = 0;
+    let currentAngle =
+        0;
 
 
     const renderedSegments =
         chartSegments
+
             .filter(
                 (segment) =>
-                    segment.count > 0
+                    segment.count >
+                    0
             )
+
             .map(
                 (segment) => {
 
@@ -684,7 +793,8 @@ const SupplierDashboard = () => {
                         360;
 
 
-                    const gap = 1.5;
+                    const gap =
+                        1.5;
 
 
                     const startAngle =
@@ -722,7 +832,7 @@ const SupplierDashboard = () => {
 
     /* =========================================================
        RENDER
-       ========================================================= */
+    ========================================================= */
 
     return (
 
@@ -829,7 +939,8 @@ const SupplierDashboard = () => {
                     </div>
 
 
-                    {approvedRequests.length === 0 ? (
+                    {approvedRequests.length ===
+                    0 ? (
 
                         <div className="empty-state">
 
@@ -878,7 +989,9 @@ const SupplierDashboard = () => {
                                     <circle
                                         cx="150"
                                         cy="150"
-                                        r={chartRadius}
+                                        r={
+                                            chartRadius
+                                        }
                                         fill="none"
                                         stroke="#eef0f3"
                                         strokeWidth={
@@ -896,7 +1009,6 @@ const SupplierDashboard = () => {
                                         (segment) => (
 
                                             <path
-
                                                 key={
                                                     segment.key
                                                 }
@@ -984,7 +1096,9 @@ const SupplierDashboard = () => {
 
 
                                             if (!segment) {
+
                                                 return null;
+
                                             }
 
 
@@ -1015,8 +1129,11 @@ const SupplierDashboard = () => {
                                                         {
                                                             segment.count ===
                                                             1
+
                                                                 ? "Order"
+
                                                                 : "Orders"
+
                                                         }
 
                                                     </span>
@@ -1100,7 +1217,8 @@ const SupplierDashboard = () => {
 
                         </div>
 
-                    ) : firstFiveRequests.length === 0 ? (
+                    ) : firstFiveRequests.length ===
+                    0 ? (
 
                         <div className="empty-state">
 

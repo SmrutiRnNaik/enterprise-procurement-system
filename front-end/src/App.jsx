@@ -13,6 +13,8 @@ import SupplierRequests from "./pages/SupplierRequests";
 import SupplierDashboard from "./pages/SupplierDashboard";
 import RaiseRequest from "./pages/RaiseRequest";
 import SupplierPaymentHistory from "./pages/SupplierPaymentHistory";
+import RatingPage from "./pages/RatingPage";
+import UserRatings from "./pages/UserRatings";
 
 
 /* =========================================================
@@ -42,6 +44,13 @@ import AdminPaymentHistory from "./components/AdminPaymentHistory";
    ========================================================= */
 
 import PaymentPage from "./pages/PaymentPage";
+
+
+/* =========================================================
+   SUPPLIER RATINGS
+   ========================================================= */
+
+import SupplierRatings from "./pages/SupplierRatings";
 
 
 function App() {
@@ -112,6 +121,26 @@ function App() {
 
 
             {/* =================================================
+                USER RATINGS & REVIEWS
+            ================================================= */}
+
+            <Route
+                path="/ratings"
+                element={<UserRatings />}
+            />
+
+
+            {/* =================================================
+                USER RATING PAGE
+            ================================================= */}
+
+            <Route
+                path="/rate-product/:productId"
+                element={<RatingPage />}
+            />
+
+
+            {/* =================================================
                 USER RAISE REQUEST
             ================================================= */}
 
@@ -160,14 +189,34 @@ function App() {
                 element={<PaymentPage />}
             />
 
+
+            {/* =================================================
+                SUPPLIER REQUESTS
+            ================================================= */}
+
             <Route
                 path="/supplier-requests"
                 element={<SupplierRequests />}
             />
 
+
+            {/* =================================================
+                SUPPLIER PAYMENT HISTORY
+            ================================================= */}
+
             <Route
                 path="/supplier-payment-history"
                 element={<SupplierPaymentHistory />}
+            />
+
+
+            {/* =================================================
+                SUPPLIER RATINGS & REVIEWS
+            ================================================= */}
+
+            <Route
+                path="/supplier-ratings"
+                element={<SupplierRatings />}
             />
 
 

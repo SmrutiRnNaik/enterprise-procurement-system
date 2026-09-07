@@ -90,6 +90,9 @@ function RequestHistory() {
             case "REJECTED":
                 return "history-status rejected";
 
+            case "DELIVERED":
+                return "history-status delivered";
+
             default:
                 return "history-status";
 
@@ -110,6 +113,9 @@ function RequestHistory() {
 
             case "REJECTED":
                 return "Rejected";
+
+            case "DELIVERED":
+                return "Delivered";
 
             default:
                 return status || "Unknown";
@@ -158,6 +164,34 @@ function RequestHistory() {
 
         return parsedDate.toLocaleDateString(
             "en-IN"
+        );
+
+    };
+
+
+    /* =========================================================
+       OPEN RATING PAGE
+       ========================================================= */
+
+    const handleRateProduct = (request) => {
+
+        navigate(
+            `/rate-product/${request.productId}`,
+            {
+                state: {
+                    productId:
+                        request.productId,
+
+                    productName:
+                        request.productName,
+
+                    quantity:
+                        request.quantity,
+
+                    totalPrice:
+                        request.totalPrice
+                }
+            }
         );
 
     };
@@ -294,117 +328,201 @@ function RequestHistory() {
                                         <tbody>
 
                                             {requests.map(
-                                                (request, index) => (
+                                                (request, index) => {
 
-                                                    <tr
-                                                        key={
-                                                            request.productId ||
-                                                            request.id ||
-                                                            index
-                                                        }
-                                                    >
+                                                    const isDelivered =
+                                                        request.status ===
+                                                        "DELIVERED";
 
-                                                        <td>
 
-                                                            <span className="history-id">
+                                                    return (
 
-                                                                #
+                                                        <tr
+                                                            key={
+                                                                request.productId ||
+                                                                request.id ||
+                                                                index
+                                                            }
+                                                        >
+
+                                                            <td>
+
+                                                                <span className="history-id">
+
+                                                                    #
+                                                                    {
+                                                                        request.productId ||
+                                                                        request.id ||
+                                                                        "—"
+                                                                    }
+
+                                                                </span>
+
+                                                            </td>
+
+
+                                                            {/* =================================================
+                                                                PRODUCT
+                                                            ================================================= */}
+
+                                                            <td>
+
+                                                                {isDelivered ? (
+
+                                                                    <button
+                                                                        type="button"
+                                                                        className="history-product rating-product-link"
+                                                                        onClick={() =>
+                                                                            handleRateProduct(
+                                                                                request
+                                                                            )
+                                                                        }
+                                                                        title="Click to rate this delivered product"
+                                                                    >
+
+                                                                        {
+                                                                            request.productName ||
+                                                                            "—"
+                                                                        }
+
+                                                                    </button>
+
+                                                                ) : (
+
+                                                                    <span className="history-product">
+
+                                                                        {
+                                                                            request.productName ||
+                                                                            "—"
+                                                                        }
+
+                                                                    </span>
+
+                                                                )}
+
+                                                            </td>
+
+
+                                                            <td>
+
                                                                 {
-                                                                    request.productId ||
-                                                                    request.id ||
+                                                                    request.department ||
                                                                     "—"
                                                                 }
 
-                                                            </span>
-
-                                                        </td>
+                                                            </td>
 
 
-                                                        <td>
-
-                                                            <span className="history-product">
+                                                            <td>
 
                                                                 {
-                                                                    request.productName ||
-                                                                    "—"
+                                                                    request.quantity ??
+                                                                    0
                                                                 }
 
-                                                            </span>
-
-                                                        </td>
+                                                            </td>
 
 
-                                                        <td>
+                                                            <td>
 
-                                                            {
-                                                                request.department ||
-                                                                "—"
-                                                            }
+                                                                <span className="history-price">
 
-                                                        </td>
+                                                                    {
+                                                                        formatPrice(
+                                                                            request.totalPrice
+                                                                        )
+                                                                    }
 
+                                                                </span>
 
-                                                        <td>
-
-                                                            {
-                                                                request.quantity ??
-                                                                0
-                                                            }
-
-                                                        </td>
+                                                            </td>
 
 
-                                                        <td>
+                                                            {/* =================================================
+                                                                STATUS
+                                                            ================================================= */}
 
-                                                            <span className="history-price">
+                                                            <td>
+
+                                                                {isDelivered ? (
+
+                                                                    <button
+                                                                        type="button"
+                                                                        className="rating-status-button"
+                                                                        onClick={() =>
+                                                                            handleRateProduct(
+                                                                                request
+                                                                            )
+                                                                        }
+                                                                    >
+
+                                                                        <span
+                                                                            className={
+                                                                                getStatusClass(
+                                                                                    request.status
+                                                                                )
+                                                                            }
+                                                                        >
+
+                                                                            <span className="history-status-dot"></span>
+
+                                                                            {
+                                                                                formatStatus(
+                                                                                    request.status
+                                                                                )
+                                                                            }
+
+                                                                        </span>
+
+
+                                                                        <span className="rating-action-text">
+
+                                                                            ⭐ Rate Product
+
+                                                                        </span>
+
+                                                                    </button>
+
+                                                                ) : (
+
+                                                                    <span
+                                                                        className={
+                                                                            getStatusClass(
+                                                                                request.status
+                                                                            )
+                                                                        }
+                                                                    >
+
+                                                                        <span className="history-status-dot"></span>
+
+                                                                        {
+                                                                            formatStatus(
+                                                                                request.status
+                                                                            )
+                                                                        }
+
+                                                                    </span>
+
+                                                                )}
+
+                                                            </td>
+
+
+                                                            <td>
 
                                                                 {
-                                                                    formatPrice(
-                                                                        request.totalPrice
+                                                                    formatDate(
+                                                                        request.createdDate
                                                                     )
                                                                 }
 
-                                                            </span>
+                                                            </td>
 
-                                                        </td>
+                                                        </tr>
 
+                                                    );
 
-                                                        <td>
-
-                                                            <span
-                                                                className={
-                                                                    getStatusClass(
-                                                                        request.status
-                                                                    )
-                                                                }
-                                                            >
-
-                                                                <span className="history-status-dot"></span>
-
-                                                                {
-                                                                    formatStatus(
-                                                                        request.status
-                                                                    )
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                formatDate(
-                                                                    request.createdDate
-                                                                )
-                                                            }
-
-                                                        </td>
-
-                                                    </tr>
-
-                                                )
+                                                }
                                             )}
 
                                         </tbody>

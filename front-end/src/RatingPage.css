@@ -1,0 +1,542 @@
+/* =========================================================
+   RATE PRODUCT PAGE
+   ========================================================= */
+
+.rating-page {
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.rating-page .history-header {
+    margin-bottom: 20px;
+}
+
+.rating-page .raise-request-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #737b86;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+.rating-page .history-header h2 {
+    margin: 0 0 4px;
+
+    color: #111111;
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+.rating-page .history-header p {
+    margin: 0;
+
+    color: #7a838e;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.rating-page-container {
+    width: 100%;
+
+    max-width: 760px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   RATING CARD
+   ========================================================= */
+
+.rating-card {
+    width: 100%;
+
+    padding: 24px 28px;
+
+    background: #ffffff;
+
+    border: 1px solid #e7e9ec;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 14px rgba(0, 0, 0, 0.045);
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PRODUCT INFORMATION
+   ========================================================= */
+
+.rating-product-info {
+    margin-bottom: 18px;
+}
+
+.rating-product-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #7b8490;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.4px;
+}
+
+.rating-product-info h3 {
+    margin: 0 0 7px;
+
+    color: #15191e;
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    line-height: 1.25;
+}
+
+
+/* =========================================================
+   PRODUCT META
+   ========================================================= */
+
+.rating-product-meta {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 0;
+}
+
+.rating-product-meta span {
+    color: #737c87;
+
+    font-size: 11px;
+
+    font-weight: 500;
+}
+
+.rating-product-meta span:not(:last-child)::after {
+    content: "•";
+
+    margin: 0 8px;
+
+    color: #c5cad0;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.rating-divider {
+    height: 1px;
+
+    margin-bottom: 20px;
+
+    background: #edf0f2;
+}
+
+
+/* =========================================================
+   RATING SECTION
+   ========================================================= */
+
+.rating-section {
+    margin-bottom: 21px;
+}
+
+.rating-section h4 {
+    margin: 0 0 10px;
+
+    color: #252a30;
+
+    font-size: 14px;
+
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   STAR CONTAINER
+   ========================================================= */
+
+.rating-stars {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    width: fit-content;
+
+    margin-bottom: 6px;
+}
+
+
+/* =========================================================
+   STAR BUTTON
+   ---------------------------------------------------------
+   Existing hover / click functionality is preserved.
+   ========================================================= */
+
+.rating-star {
+    width: 34px;
+
+    height: 34px;
+
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid #e0e4e8;
+
+    border-radius: 7px;
+
+    background: #ffffff;
+
+    color: #d2d7dc;
+
+    font-family: inherit;
+
+    font-size: 21px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        color 0.14s ease,
+        background 0.14s ease,
+        border-color 0.14s ease,
+        transform 0.14s ease;
+}
+
+
+/* =========================================================
+   STAR HOVER
+   ========================================================= */
+
+.rating-star:hover {
+    color: #dda400;
+
+    background: #fffaf0;
+
+    border-color: #e3c76d;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   SELECTED STAR
+   ========================================================= */
+
+.rating-star.active {
+    color: #dda400;
+
+    background: #fffaf0;
+
+    border-color: #e3c76d;
+}
+
+
+/* =========================================================
+   RATING TEXT
+   ========================================================= */
+
+.rating-value {
+    min-height: 16px;
+
+    color: #858e98;
+
+    font-size: 10px;
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.rating-description-section {
+    margin-bottom: 19px;
+}
+
+.rating-description-section label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #252a30;
+
+    font-size: 12px;
+
+    font-weight: 650;
+}
+
+.rating-description-section textarea {
+    display: block;
+
+    width: 100%;
+
+    height: 110px;
+
+    min-height: 110px;
+
+    max-height: 180px;
+
+    padding: 11px 12px;
+
+    resize: vertical;
+
+    border: 1px solid #dfe3e7;
+
+    border-radius: 7px;
+
+    outline: none;
+
+    background: #ffffff;
+
+    color: #252a30;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    box-sizing: border-box;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.rating-description-section textarea::placeholder {
+    color: #a1a8b0;
+}
+
+.rating-description-section textarea:hover {
+    border-color: #cbd1d7;
+}
+
+.rating-description-section textarea:focus {
+    border-color: #111111;
+
+    box-shadow:
+        0 0 0 3px rgba(17, 17, 17, 0.055);
+}
+
+
+/* =========================================================
+   CHARACTER COUNT
+   ========================================================= */
+
+.rating-character-count {
+    margin-top: 4px;
+
+    text-align: right;
+
+    color: #969da5;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.rating-actions {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 7px;
+
+    padding-top: 2px;
+}
+
+
+/* =========================================================
+   CANCEL
+   ========================================================= */
+
+.rating-cancel-button {
+    height: 32px;
+
+    padding: 0 14px;
+
+    border: 1px solid #d9dde2;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    color: #4b5563;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.rating-cancel-button:hover {
+    background: #f6f7f8;
+
+    border-color: #cbd0d6;
+}
+
+
+/* =========================================================
+   SUBMIT
+   ========================================================= */
+
+.rating-submit-button {
+    height: 32px;
+
+    padding: 0 16px;
+
+    border: 1px solid #111111;
+
+    border-radius: 6px;
+
+    background: #111111;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.rating-submit-button:hover:not(:disabled) {
+    background: #292929;
+
+    transform: translateY(-1px);
+}
+
+.rating-submit-button:disabled,
+.rating-cancel-button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .rating-page-container {
+        max-width: 100%;
+    }
+
+    .rating-card {
+        padding: 22px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .rating-page .history-header h2 {
+        font-size: 24px;
+    }
+
+    .rating-card {
+        padding: 19px;
+
+        border-radius: 10px;
+    }
+
+    .rating-product-info h3 {
+        font-size: 19px;
+    }
+
+    .rating-product-meta {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 4px;
+    }
+
+    .rating-product-meta span:not(:last-child)::after {
+        display: none;
+    }
+
+    .rating-star {
+        width: 32px;
+
+        height: 32px;
+
+        font-size: 20px;
+    }
+
+    .rating-actions {
+        justify-content: stretch;
+    }
+
+    .rating-cancel-button,
+    .rating-submit-button {
+        flex: 1;
+    }
+
+}

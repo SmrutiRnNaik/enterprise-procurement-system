@@ -1524,3 +1524,606 @@
     }
 
 }
+
+/* =========================================================
+   SUPPLIER RATINGS & REVIEWS MODULE
+   ========================================================= */
+
+
+/* =========================================================
+   RATING SUMMARY
+   ========================================================= */
+
+.supplier-rating-summary {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    margin-bottom: 24px;
+    padding: 28px 32px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+
+/* =========================================================
+   AVERAGE RATING
+   ========================================================= */
+
+.supplier-rating-average {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-right: 40px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.supplier-rating-summary-label {
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.supplier-rating-average-value {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #111827;
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.supplier-rating-average-value span {
+    color: #f59e0b;
+    font-size: 32px;
+}
+
+.supplier-rating-summary-stars {
+    margin-top: 12px;
+}
+
+.supplier-rating-total {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   RATING STARS
+   ========================================================= */
+
+.supplier-rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.supplier-rating-stars span {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.supplier-rating-stars .filled {
+    color: #f59e0b;
+}
+
+.supplier-rating-stars .empty {
+    color: #d1d5db;
+}
+
+
+/* =========================================================
+   RATING DISTRIBUTION
+   ========================================================= */
+
+.supplier-rating-distribution {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 11px;
+    max-width: 620px;
+    width: 100%;
+}
+
+.rating-distribution-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 28px;
+    align-items: center;
+    gap: 12px;
+    color: #4b5563;
+    font-size: 13px;
+}
+
+.rating-distribution-row > span:first-child {
+    font-weight: 600;
+    text-align: right;
+}
+
+.rating-distribution-row > span:last-child {
+    color: #6b7280;
+    font-weight: 600;
+    text-align: left;
+}
+
+.rating-distribution-bar {
+    height: 8px;
+    overflow: hidden;
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+
+.rating-distribution-fill {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+
+/* =========================================================
+   RATED PRODUCTS TABLE
+   ========================================================= */
+
+.supplier-rating-row {
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.supplier-rating-row:hover {
+    background-color: #f9fafb;
+}
+
+.supplier-rating-row td {
+    vertical-align: middle;
+}
+
+.supplier-rating-row .history-product {
+    font-weight: 600;
+    color: #111827;
+}
+
+.supplier-rating-row .history-id {
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   REVIEW MODAL OVERLAY
+   ========================================================= */
+
+.supplier-review-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(17, 24, 39, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   REVIEW MODAL
+   ========================================================= */
+
+.supplier-review-modal {
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    background: #ffffff;
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.20);
+
+    animation: supplierReviewModalIn 0.2s ease-out;
+}
+
+@keyframes supplierReviewModalIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   MODAL HEADER
+   ========================================================= */
+
+.supplier-review-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    padding: 24px 26px 20px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.supplier-review-modal-header span {
+    display: block;
+    margin-bottom: 5px;
+
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.supplier-review-modal-header h3 {
+    margin: 0;
+
+    color: #111827;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.supplier-review-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+
+    background: #f3f4f6;
+    color: #374151;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.supplier-review-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+
+/* =========================================================
+   REVIEW META INFORMATION
+   ========================================================= */
+
+.supplier-review-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+
+    padding: 20px 26px;
+
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.supplier-review-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.supplier-review-meta span {
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.supplier-review-meta strong {
+    color: #111827;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   REVIEW RATING
+   ========================================================= */
+
+.supplier-review-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 22px 26px 12px;
+}
+
+.supplier-review-rating .supplier-rating-stars {
+    gap: 4px;
+}
+
+.supplier-review-rating .supplier-rating-stars span {
+    font-size: 24px;
+}
+
+.supplier-review-rating > span {
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   REVIEW CONTENT
+   ========================================================= */
+
+.supplier-review-content {
+    padding: 10px 26px 24px;
+}
+
+.supplier-review-content > span {
+    display: block;
+    margin-bottom: 10px;
+
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.supplier-review-content p {
+    margin: 0;
+    padding: 16px 18px;
+
+    background: #f9fafb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 8px;
+
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+
+/* =========================================================
+   MODAL FOOTER
+   ========================================================= */
+
+.supplier-review-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    padding: 16px 26px 22px;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+.supplier-review-modal-footer .btn {
+    min-width: 90px;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .supplier-rating-summary {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .supplier-rating-average {
+        padding-right: 0;
+        padding-bottom: 24px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .supplier-rating-distribution {
+        max-width: none;
+    }
+
+    .supplier-review-overlay {
+        padding: 16px;
+    }
+
+    .supplier-review-modal {
+        max-height: 94vh;
+    }
+
+    .supplier-review-meta {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .supplier-rating-summary {
+        padding: 20px;
+    }
+
+    .supplier-rating-average-value {
+        font-size: 36px;
+    }
+
+    .supplier-rating-average-value span {
+        font-size: 28px;
+    }
+
+    .rating-distribution-row {
+        grid-template-columns: 30px 1fr 24px;
+        gap: 8px;
+    }
+
+    .supplier-review-modal-header,
+    .supplier-review-meta,
+    .supplier-review-rating,
+    .supplier-review-content {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .supplier-review-modal-footer {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+
+/* =========================================================
+   MINIMAL SUPPLIER CONFIRMATION
+   ========================================================= */
+
+.infy-supplier-confirm-popup {
+    border-radius: 12px !important;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.14) !important;
+
+    border: 1px solid #e8e8e8 !important;
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.infy-supplier-confirm-title {
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    color: #111111 !important;
+
+    font-size: 18px !important;
+
+    font-weight: 650 !important;
+
+    line-height: 1.3 !important;
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.infy-supplier-confirm-text {
+    margin-top: 7px !important;
+
+    margin-bottom: 0 !important;
+
+    padding: 0 !important;
+
+    color: #6b7280 !important;
+
+    font-size: 13px !important;
+
+    line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   BUTTON CONTAINER
+   ========================================================= */
+
+.infy-supplier-confirm-actions {
+    margin-top: 18px !important;
+
+    gap: 8px !important;
+}
+
+
+/* =========================================================
+   UPDATE BUTTON
+   ========================================================= */
+
+.infy-supplier-confirm-button {
+    min-width: 72px !important;
+
+    height: 34px !important;
+
+    margin: 0 !important;
+
+    padding: 0 15px !important;
+
+    border: none !important;
+
+    border-radius: 7px !important;
+
+    background: #111111 !important;
+
+    color: #ffffff !important;
+
+    font-size: 12px !important;
+
+    font-weight: 600 !important;
+
+    box-shadow: none !important;
+}
+
+.infy-supplier-confirm-button:hover {
+    background: #292929 !important;
+}
+
+
+/* =========================================================
+   CANCEL BUTTON
+   ========================================================= */
+
+.infy-supplier-cancel-button {
+    min-width: 72px !important;
+
+    height: 34px !important;
+
+    margin: 0 !important;
+
+    padding: 0 15px !important;
+
+    border: 1px solid #dedede !important;
+
+    border-radius: 7px !important;
+
+    background: #ffffff !important;
+
+    color: #4b5563 !important;
+
+    font-size: 12px !important;
+
+    font-weight: 600 !important;
+
+    box-shadow: none !important;
+}
+
+.infy-supplier-cancel-button:hover {
+    background: #f7f7f7 !important;
+
+    color: #111111 !important;
+}

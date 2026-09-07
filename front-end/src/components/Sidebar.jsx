@@ -21,7 +21,7 @@ function Sidebar() {
 
     /* =========================================================
        LOGOUT
-       ========================================================= */
+    ========================================================= */
 
     const handleLogout = async () => {
 
@@ -132,6 +132,27 @@ function Sidebar() {
                     </span>
 
                 </NavLink>
+
+
+                {/* Ratings & Reviews */}
+
+                <NavLink
+                    to="/ratings"
+                    className={({ isActive }) =>
+                        `sidebar-link ${
+                            isActive ? "active" : ""
+                        }`
+                    }
+                >
+
+                    <i className="bi bi-star-fill"></i>
+
+                    <span>
+                        Ratings & Reviews
+                    </span>
+
+                </NavLink>
+
 
             </div>
 

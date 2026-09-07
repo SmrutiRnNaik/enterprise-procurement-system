@@ -17,6 +17,8 @@ public class RatingResponse {
 
     private String productName;
 
+    private Integer quantity;
+
     private Long userId;
 
     private String userName;

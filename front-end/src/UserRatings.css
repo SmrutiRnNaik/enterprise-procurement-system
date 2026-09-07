@@ -1,0 +1,663 @@
+/* =========================================================
+   USER RATINGS & REVIEWS PAGE
+   ========================================================= */
+
+.user-ratings-page {
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.user-ratings-page .history-header {
+    margin-bottom: 28px;
+}
+
+.user-ratings-page .history-header h2 {
+    margin: 4px 0 5px;
+
+    color: #111111;
+
+    font-size: 30px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+}
+
+.user-ratings-page .history-header p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   FEEDBACK LABEL
+   ========================================================= */
+
+.user-ratings-page .raise-request-label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #737b86;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.user-ratings-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+
+/* =========================================================
+   SUMMARY CARD
+   ========================================================= */
+
+.user-rating-summary-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    min-height: 105px;
+
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e7e9ec;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.045);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.user-rating-summary-card:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, 0.07);
+}
+
+
+/* =========================================================
+   SUMMARY ICON
+   ========================================================= */
+
+.user-rating-summary-icon {
+
+    width: 46px;
+
+    height: 46px;
+
+    min-width: 46px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-size: 18px;
+}
+
+
+.user-rating-summary-icon.delivered {
+
+    background: #eef2ff;
+
+    color: #315bea;
+}
+
+
+.user-rating-summary-icon.rated {
+
+    background: #edf8f3;
+
+    color: #17875b;
+}
+
+
+.user-rating-summary-icon.unrated {
+
+    background: #fff7df;
+
+    color: #b27c00;
+}
+
+
+/* =========================================================
+   SUMMARY TEXT
+   ========================================================= */
+
+.user-rating-summary-card > div:last-child {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.user-rating-summary-card span {
+
+    margin: 0;
+
+    color: #7b8490;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.7px;
+}
+
+
+.user-rating-summary-card strong {
+
+    margin: 0;
+
+    color: #111111;
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   TABLE CARD
+   ========================================================= */
+
+.user-ratings-page .history-table-card {
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    border: 1px solid #e7e9ec;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.045);
+}
+
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
+
+.user-ratings-page .history-table-header {
+
+    padding: 22px 24px;
+
+    border-bottom:
+        1px solid #eef0f2;
+}
+
+
+.user-ratings-page .history-table-header h2 {
+
+    margin: 0 0 5px;
+
+    color: #111111;
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+
+.user-ratings-page .history-table-header p {
+
+    margin: 0;
+
+    color: #7b8490;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.user-ratings-page .history-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+
+.user-ratings-page .history-table thead th {
+
+    height: 44px;
+
+    padding: 0 18px;
+
+    background: #f7f8fa;
+
+    border-bottom:
+        1px solid #e6e8eb;
+
+    color: #737b86;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.7px;
+
+    white-space: nowrap;
+}
+
+
+.user-ratings-page .history-table tbody td {
+
+    height: 62px;
+
+    padding: 10px 18px;
+
+    border-bottom:
+        1px solid #f0f1f3;
+
+    color: #4b5563;
+
+    font-size: 12px;
+
+    vertical-align: middle;
+}
+
+
+.user-ratings-page .history-table tbody tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+.user-ratings-page .history-table tbody tr {
+
+    transition:
+        background 0.15s ease;
+}
+
+
+.user-ratings-page .history-table tbody tr:hover {
+
+    background: #fafbfc;
+}
+
+
+/* =========================================================
+   PRODUCT ID
+   ========================================================= */
+
+.user-ratings-page .history-id {
+
+    color: #7b8490;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   PRODUCT NAME
+   ========================================================= */
+
+.user-ratings-page .history-product {
+
+    color: #18202b;
+
+    font-size: 12px;
+
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.user-rating-status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    min-height: 27px;
+
+    padding: 0 10px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+.user-rating-status.rated {
+
+    background: #eaf7f1;
+
+    color: #187653;
+}
+
+
+.user-rating-status.unrated {
+
+    background: #fff7df;
+
+    color: #997316;
+}
+
+
+/* =========================================================
+   ACTION BUTTON
+   ========================================================= */
+
+.user-rating-action {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    height: 32px;
+
+    padding: 0 12px;
+
+    border-radius: 7px;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+
+/* VIEW */
+
+.user-rating-action.view {
+
+    background: #ffffff;
+
+    border: 1px solid #d7dce1;
+
+    color: #344054;
+}
+
+
+.user-rating-action.view:hover {
+
+    background: #f5f6f8;
+
+    border-color: #c5cbd2;
+
+    transform: translateY(-1px);
+}
+
+
+/* RATE */
+
+.user-rating-action.rate {
+
+    background: #111111;
+
+    border: 1px solid #111111;
+
+    color: #ffffff;
+}
+
+
+.user-rating-action.rate:hover {
+
+    background: #292929;
+
+    border-color: #292929;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.user-ratings-page .history-empty {
+
+    min-height: 300px;
+
+    padding: 60px 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+}
+
+
+.user-ratings-page .history-empty-icon {
+
+    width: 50px;
+
+    height: 50px;
+
+    margin-bottom: 15px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #f4f5f7;
+
+    color: #7b8490;
+
+    font-size: 20px;
+}
+
+
+.user-ratings-page .history-empty h5 {
+
+    margin: 0 0 7px;
+
+    color: #252b33;
+
+    font-size: 15px;
+
+    font-weight: 650;
+}
+
+
+.user-ratings-page .history-empty p {
+
+    max-width: 430px;
+
+    margin: 0;
+
+    color: #89919c;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.user-ratings-page .history-loading {
+
+    min-height: 280px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+}
+
+
+.user-ratings-page .history-loading p {
+
+    margin: 0;
+
+    color: #7b8490;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   REVIEW MODAL
+   ---------------------------------------------------------
+   Same visual structure as Supplier Ratings.
+   ========================================================= */
+
+.user-ratings-page .supplier-review-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(15, 18, 22, 0.48);
+}
+
+
+.user-ratings-page .supplier-review-modal {
+
+    width: 100%;
+
+    max-width: 500px;
+
+    max-height: 85vh;
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .user-ratings-summary {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .user-ratings-summary {
+
+        grid-template-columns: 1fr;
+    }
+
+    .user-ratings-page .history-table-header {
+
+        padding: 18px;
+    }
+
+    .user-ratings-page .history-table thead th,
+    .user-ratings-page .history-table tbody td {
+
+        padding-left: 12px;
+
+        padding-right: 12px;
+    }
+
+}

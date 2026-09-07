@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
 import "../Supplier.css";
 
 import SupplierSidebar from "../components/SupplierSidebar";
+
+import {
+    showSupplierSuccess,
+    showSupplierError
+} from "../utils/notifications";
+
 
 function SupplierRequests() {
 
@@ -28,11 +33,10 @@ function SupplierRequests() {
 
         if (!supplierId) {
 
-            Swal.fire({
-                icon: "error",
-                title: "Session Expired",
-                text: "Please login again."
-            });
+            showSupplierError(
+                "Session Expired",
+                "Please login again."
+            );
 
             return;
         }
@@ -134,13 +138,11 @@ function SupplierRequests() {
                 error
             );
 
-            Swal.fire({
-                icon: "error",
-                title: "Unable to Load Requests",
-                text:
-                    error.response?.data?.message ||
-                    "Could not load supplier requests."
-            });
+            showSupplierError(
+                "Unable to Load Requests",
+                error.response?.data?.message ||
+                "Could not load supplier requests."
+            );
 
         } finally {
 
@@ -247,11 +249,10 @@ function SupplierRequests() {
 
         if (!supplierId) {
 
-            Swal.fire({
-                icon: "error",
-                title: "Session Expired",
-                text: "Please login again."
-            });
+            showSupplierError(
+                "Session Expired",
+                "Please login again."
+            );
 
             return;
         }
@@ -333,14 +334,10 @@ function SupplierRequests() {
             window.URL.revokeObjectURL(url);
 
 
-            Swal.fire({
-                icon: "success",
-                title: "Download Started",
-                text:
-                    `Approved supplier requests downloaded as ${extension.toUpperCase()}.`,
-                timer: 1800,
-                showConfirmButton: false
-            });
+            showSupplierSuccess(
+                "Download Started",
+                `Approved supplier requests downloaded as ${extension.toUpperCase()}.`
+            );
 
         } catch (error) {
 
@@ -349,12 +346,10 @@ function SupplierRequests() {
                 error
             );
 
-            Swal.fire({
-                icon: "error",
-                title: "Download Failed",
-                text:
-                    "Unable to download supplier request history."
-            });
+            showSupplierError(
+                "Download Failed",
+                "Unable to download supplier request history."
+            );
 
         } finally {
 

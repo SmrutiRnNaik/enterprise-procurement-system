@@ -21,7 +21,7 @@ function SupplierSidebar() {
 
     /* =========================================================
        LOGOUT
-       ========================================================= */
+    ========================================================= */
 
     const handleLogout = async () => {
 
@@ -136,6 +136,28 @@ function SupplierSidebar() {
 
                     <span>
                         Payment History
+                    </span>
+
+                </NavLink>
+
+
+                {/* =================================================
+                    RATINGS & REVIEWS
+                ================================================= */}
+
+                <NavLink
+                    to="/supplier-ratings"
+                    className={({ isActive }) =>
+                        `sidebar-link ${
+                            isActive ? "active" : ""
+                        }`
+                    }
+                >
+
+                    <i className="bi bi-star-fill"></i>
+
+                    <span>
+                        Ratings & Reviews
                     </span>
 
                 </NavLink>
