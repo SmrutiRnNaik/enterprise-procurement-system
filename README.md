@@ -64,11 +64,10 @@ InfyProcure is a full-stack procurement management platform that centralizes pro
 - MySQL **8.0.46**
 - MySQL Connector/J **9.3.0**
 
-### Development & Deployment
+### Development & Version-control
 
 - Git / GitHub
 - Maven
-- Railway
 
 ---
 
@@ -498,15 +497,3 @@ Use environment variables or local configuration for sensitive settings.
 - Enterprise staging-to-production CI/CD
 
 ---
-
-## Project Status
-
-**Status:** Completed full-stack academic/internship project.
-
-InfyProcure currently focuses on the complete procurement-to-fulfillment lifecycle: request creation, approval, supplier processing, validated payment, order tracking, stakeholder notifications, and post-delivery feedback.
-
----
-
-## License
-
-This project is intended for academic/internship use. Add an open-source license file if the repository is intended for public redistribution.
