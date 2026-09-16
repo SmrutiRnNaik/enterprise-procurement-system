@@ -1,0 +1,1063 @@
+/* =========================================================
+   ADMIN REQUEST HISTORY
+   ========================================================= */
+
+.admin-history-page {
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.admin-history-page .dashboard-content {
+    min-height: 100vh;
+}
+
+.admin-history-container {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.admin-history-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    margin-bottom: 25px;
+}
+
+
+.admin-history-eyebrow {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #858d97;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: 1.6px;
+}
+
+
+.admin-history-header h2 {
+    margin: 0;
+
+    color: #111111;
+
+    font-size: 29px;
+    font-weight: 700;
+
+    line-height: 1.15;
+
+    letter-spacing: -0.5px;
+}
+
+
+.admin-history-header p {
+    margin: 7px 0 0;
+
+    color: #737b85;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   DOWNLOAD
+   ========================================================= */
+
+.admin-history-actions {
+    position: relative;
+}
+
+
+.admin-history-dropdown {
+    position: relative;
+}
+
+
+.admin-history-download {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 0 14px;
+
+    border: 1px solid #d9dde2;
+    border-radius: 7px;
+
+    background: #ffffff;
+
+    color: #222222;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: none;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+
+.admin-history-download:hover {
+    background: #f7f8f9;
+    border-color: #cbd0d6;
+}
+
+
+.admin-history-download > i:last-child {
+    margin-left: 2px;
+
+    font-size: 9px;
+}
+
+
+.admin-history-download:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   DOWNLOAD MENU
+   ========================================================= */
+
+.admin-history-download-menu {
+    position: absolute;
+
+    top: calc(100% + 7px);
+    right: 0;
+
+    z-index: 20;
+
+    min-width: 185px;
+
+    padding: 5px;
+
+    display: none;
+
+    background: #ffffff;
+
+    border: 1px solid #e3e6e9;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.10);
+}
+
+
+.admin-history-download-menu.show {
+    display: block;
+}
+
+
+.admin-history-download-menu button {
+    width: 100%;
+
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 0 10px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background: transparent;
+
+    color: #39414a;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.admin-history-download-menu button:hover {
+    background: #f4f5f6;
+
+    color: #111111;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.admin-summary-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+
+    width: 100%;
+
+    margin-bottom: 24px;
+}
+
+
+.admin-stat-card {
+    min-width: 0;
+    min-height: 116px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 19px 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 11px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.045);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+.admin-stat-card:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.065);
+}
+
+
+.admin-stat-card > div:last-child {
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.admin-stat-card span {
+    color: #737b85;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+
+.admin-stat-card strong {
+    margin-top: 8px;
+
+    color: #111111;
+
+    font-size: 28px;
+
+    line-height: 1;
+
+    font-weight: 700;
+}
+
+
+.admin-stat-icon {
+    width: 39px;
+    height: 39px;
+
+    flex: 0 0 39px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    font-size: 16px;
+}
+
+
+.admin-stat-icon.neutral {
+    background: #f0f2f4;
+    color: #59616b;
+}
+
+
+.admin-stat-icon.pending {
+    background: #fff6df;
+    color: #a57b00;
+}
+
+
+.admin-stat-icon.approved {
+    background: #eaf7f1;
+    color: #16815b;
+}
+
+
+.admin-stat-icon.rejected {
+    background: #faecee;
+    color: #c14857;
+}
+
+
+/* =========================================================
+   MAIN PANEL
+   ========================================================= */
+
+.admin-history-panel {
+    width: 100%;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.045);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PANEL HEADER
+   ========================================================= */
+
+.admin-history-panel-header {
+    min-height: 69px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 15px 20px;
+
+    border-bottom: 1px solid #e8eaed;
+}
+
+
+.admin-history-panel-header h3 {
+    margin: 0;
+
+    color: #171a1e;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+
+.admin-history-panel-header span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #8a929c;
+
+    font-size: 10px;
+}
+
+
+.admin-history-back {
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 11px;
+
+    border: 1px solid #d9dde2;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    color: #4a535d;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.admin-history-back:hover {
+    background: #f6f7f8;
+
+    border-color: #cbd0d5;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.admin-history-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.admin-history-table {
+    width: 100%;
+
+    min-width: 1100px;
+
+    border-collapse: collapse;
+
+    table-layout: auto;
+
+    font-size: 11px;
+}
+
+
+.admin-history-table thead {
+    background: #f7f8fa;
+}
+
+
+.admin-history-table th {
+    height: 42px;
+
+    padding: 0 13px;
+
+    color: #707984;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.45px;
+
+    text-align: left;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.admin-history-table td {
+    height: 57px;
+
+    padding: 0 13px;
+
+    color: #626b75;
+
+    vertical-align: middle;
+
+    white-space: nowrap;
+
+    border-bottom: 1px solid #edf0f2;
+}
+
+
+.admin-history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+.admin-history-table tbody tr {
+    transition: background 0.12s ease;
+}
+
+
+.admin-history-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+
+/* =========================================================
+   ID
+   ========================================================= */
+
+.admin-request-id {
+    color: #858d96;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   PRODUCT
+   ========================================================= */
+
+.admin-product-name {
+    color: #1d2227;
+
+    font-size: 11px;
+
+    font-weight: 650;
+}
+
+
+.admin-product-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    max-width: 220px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    color: #15191d;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    text-align: left;
+
+    white-space: normal;
+
+    cursor: pointer;
+}
+
+
+.admin-product-link i {
+    color: #8a929b;
+
+    font-size: 9px;
+
+    opacity: 0;
+
+    transition: opacity 0.12s ease;
+}
+
+
+.admin-product-link:hover {
+    color: #111111;
+
+    text-decoration: underline;
+}
+
+
+.admin-product-link:hover i {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.admin-price {
+    color: #161a1e;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.admin-status-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+
+    cursor: pointer;
+}
+
+
+.admin-status-button > i {
+    color: #8d959d;
+
+    font-size: 9px;
+
+    transition:
+        transform 0.12s ease,
+        color 0.12s ease;
+}
+
+
+.admin-status-button:hover > i {
+    color: #111111;
+
+    transform: translateX(2px);
+}
+
+
+.admin-status-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    min-height: 25px;
+
+    padding: 0 9px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+.admin-status-dot {
+    width: 5px;
+    height: 5px;
+
+    flex: 0 0 5px;
+
+    border-radius: 50%;
+}
+
+
+.admin-status-badge.approved {
+    background: #eaf7f1;
+    color: #187653;
+}
+
+
+.admin-status-badge.approved .admin-status-dot {
+    background: #159765;
+}
+
+
+.admin-status-badge.pending {
+    background: #faf4e5;
+    color: #947215;
+}
+
+
+.admin-status-badge.pending .admin-status-dot {
+    background: #d6a500;
+}
+
+
+.admin-status-badge.rejected {
+    background: #faecee;
+    color: #b04451;
+}
+
+
+.admin-status-badge.rejected .admin-status-dot {
+    background: #d75b68;
+}
+
+
+.admin-status-badge.delivered {
+    background: #eaf7f1;
+    color: #187653;
+}
+
+
+.admin-status-badge.delivered .admin-status-dot {
+    background: #159765;
+}
+
+
+.admin-status-badge.default {
+    background: #f1f3f5;
+    color: #69727c;
+}
+
+
+.admin-status-badge.default .admin-status-dot {
+    background: #9aa1a8;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.admin-action-buttons {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+
+.admin-approve-button,
+.admin-reject-button {
+    height: 29px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    padding: 0 9px;
+
+    border-radius: 5px;
+
+    font-family: inherit;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.12s ease,
+        border-color 0.12s ease;
+}
+
+
+.admin-approve-button {
+    border: 1px solid #159765;
+
+    background: #159765;
+
+    color: #ffffff;
+}
+
+
+.admin-approve-button:hover:not(:disabled) {
+    background: #117c54;
+
+    border-color: #117c54;
+}
+
+
+.admin-reject-button {
+    border: 1px solid #e2b2b9;
+
+    background: #ffffff;
+
+    color: #c34b59;
+}
+
+
+.admin-reject-button:hover:not(:disabled) {
+    background: #faecee;
+
+    border-color: #d98a94;
+}
+
+
+.admin-approve-button:disabled,
+.admin-reject-button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   NO ACTION
+   ========================================================= */
+
+.admin-no-action {
+    color: #a2a8ae;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.admin-date {
+    color: #737b85;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.admin-history-empty {
+    min-height: 280px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 40px;
+}
+
+
+.admin-history-empty > i {
+    color: #b5bbc1;
+
+    font-size: 31px;
+}
+
+
+.admin-history-empty h4 {
+    margin: 12px 0 4px;
+
+    color: #252a2f;
+
+    font-size: 14px;
+}
+
+
+.admin-history-empty p {
+    margin: 0;
+
+    color: #8a929b;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.admin-history-loading {
+    min-height: 250px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    color: #7d858e;
+
+    font-size: 11px;
+}
+
+
+.admin-history-spinner,
+.admin-history-small-spinner,
+.admin-button-spinner {
+    border-radius: 50%;
+
+    border-style: solid;
+
+    animation: admin-history-spin 0.7s linear infinite;
+}
+
+
+.admin-history-spinner {
+    width: 28px;
+    height: 28px;
+
+    border-width: 3px;
+
+    border-color: #e4e7ea;
+
+    border-top-color: #111111;
+}
+
+
+.admin-history-small-spinner {
+    width: 12px;
+    height: 12px;
+
+    border-width: 2px;
+
+    border-color: #d8dce0;
+
+    border-top-color: #333333;
+}
+
+
+.admin-button-spinner {
+    width: 10px;
+    height: 10px;
+
+    border-width: 2px;
+
+    border-color: rgba(255, 255, 255, 0.45);
+
+    border-top-color: #ffffff;
+}
+
+
+@keyframes admin-history-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   ORDER STATUS LOADING OVERLAY
+   ========================================================= */
+
+.order-status-loading-overlay {
+    position: fixed !important;
+
+    inset: 0 !important;
+
+    z-index: 2147483646 !important;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(17, 17, 17, 0.45);
+}
+
+
+.order-status-loading-modal {
+    width: 280px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.16);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    .admin-summary-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .admin-history-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .admin-history-actions {
+        width: 100%;
+    }
+
+    .admin-history-download {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+    .admin-history-download-menu {
+        left: 0;
+        right: auto;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .admin-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-history-header h2 {
+        font-size: 25px;
+    }
+
+    .admin-history-panel-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .admin-history-back {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+}

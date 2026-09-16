@@ -56,16 +56,108 @@ const SupplierDashboard = () => {
 
         }
 
-        fetchSupplierRequests();
+
+        /*
+         * Initial load.
+         * This shows the loading state.
+         */
+
+        fetchSupplierRequests(true);
+
+
+        /*
+         * Automatically refresh every 10 seconds.
+         *
+         * Background refreshes are silent, so the
+         * dashboard does not flicker or show loading
+         * repeatedly.
+         */
+
+        const refreshInterval =
+            setInterval(() => {
+
+                fetchSupplierRequests(false);
+
+            }, 10000);
+
+
+        /*
+         * Refresh immediately when the user returns
+         * to the browser window.
+         */
+
+        const handleFocus = () => {
+
+            fetchSupplierRequests(false);
+
+        };
+
+
+        /*
+         * Refresh immediately when the browser tab
+         * becomes visible again.
+         */
+
+        const handleVisibilityChange = () => {
+
+            if (
+                document.visibilityState ===
+                "visible"
+            ) {
+
+                fetchSupplierRequests(false);
+
+            }
+
+        };
+
+
+        window.addEventListener(
+            "focus",
+            handleFocus
+        );
+
+
+        document.addEventListener(
+            "visibilitychange",
+            handleVisibilityChange
+        );
+
+
+        return () => {
+
+            clearInterval(
+                refreshInterval
+            );
+
+
+            window.removeEventListener(
+                "focus",
+                handleFocus
+            );
+
+
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+
+        };
 
     }, [supplierId, navigate]);
 
 
-    const fetchSupplierRequests = async () => {
+    const fetchSupplierRequests = async (
+        showLoading = false
+    ) => {
 
         try {
 
-            setLoading(true);
+            if (showLoading) {
+
+                setLoading(true);
+
+            }
 
 
             const response =
@@ -177,15 +269,31 @@ const SupplierDashboard = () => {
             );
 
 
-            showSupplierError(
-                "Unable to Load Requests",
-                error.response?.data?.message ||
-                "Could not fetch supplier request history."
-            );
+            /*
+             * Only show the error toast during
+             * a visible/initial load.
+             *
+             * Background refresh failures should
+             * not repeatedly disturb the supplier.
+             */
+
+            if (showLoading) {
+
+                showSupplierError(
+                    "Unable to Load Requests",
+                    error.response?.data?.message ||
+                    "Could not fetch supplier request history."
+                );
+
+            }
 
         } finally {
 
-            setLoading(false);
+            if (showLoading) {
+
+                setLoading(false);
+
+            }
 
         }
 
@@ -364,12 +472,6 @@ const SupplierDashboard = () => {
             );
 
 
-            /*
-             * Supplier success is now a small
-             * top-center toast instead of a
-             * large centered popup.
-             */
-
             showSupplierSuccess(
                 "Status Updated",
                 `Order status changed to ${formatStatus(
@@ -527,7 +629,7 @@ const SupplierDashboard = () => {
 
 
     /* =========================================================
-       FIRST FIVE ACTIVE REQUESTS
+       ACTIVE SUPPLY REQUESTS
     ========================================================= */
 
     /*
@@ -541,6 +643,9 @@ const SupplierDashboard = () => {
      * Completed / DELIVERED requests are excluded.
      *
      * Requests are sorted oldest first.
+     *
+     * There is intentionally NO .slice(0, 5)
+     * so all active approved requests are shown.
      */
 
     const firstFiveRequests =
@@ -590,11 +695,6 @@ const SupplierDashboard = () => {
                     );
 
                 }
-            )
-
-            .slice(
-                0,
-                5
             );
 
 
@@ -1026,12 +1126,6 @@ const SupplierDashboard = () => {
                                                     segment.color
                                                 }
 
-                                                /*
-                                                 * Fixed width.
-                                                 * The CSS hover effect handles
-                                                 * the visual interaction.
-                                                 */
-
                                                 strokeWidth={
                                                     chartStrokeWidth
                                                 }
@@ -1169,7 +1263,7 @@ const SupplierDashboard = () => {
 
 
                 {/* =================================================
-                   FIRST FIVE ACTIVE SUPPLY REQUESTS
+                   ACTIVE SUPPLY REQUESTS
                 ================================================= */}
 
                 <div className="history-table-card">
@@ -1184,8 +1278,8 @@ const SupplierDashboard = () => {
                             </h2>
 
                             <p>
-                                First five active approved
-                                procurement requests assigned to you.
+                                Active approved procurement requests
+                                assigned to you.
                             </p>
 
                         </div>

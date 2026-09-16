@@ -1,18 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 import Sidebar from "../components/Sidebar";
 import DownloadDropdown from "../components/DownloadDropdown";
+import OrderStatusTracker from "./OrderStatusTracker";
 
 import { getRequestHistory } from "../services/dashboardService";
+
 
 function RequestHistory() {
 
     const navigate = useNavigate();
 
     const [requests, setRequests] = useState([]);
+
     const [loading, setLoading] = useState(true);
+
+    const [selectedRequest, setSelectedRequest] =
+        useState(null);
+
+    const [orderStatus, setOrderStatus] =
+        useState(null);
 
 
     /* =========================================================
@@ -30,7 +40,9 @@ function RequestHistory() {
 
                 if (!userId) {
 
-                    console.error("User ID not found.");
+                    console.error(
+                        "User ID not found."
+                    );
 
                     navigate("/login");
 
@@ -74,7 +86,7 @@ function RequestHistory() {
 
 
     /* =========================================================
-       STATUS
+       STATUS CLASS
        ========================================================= */
 
     const getStatusClass = (status) => {
@@ -95,11 +107,13 @@ function RequestHistory() {
 
             default:
                 return "history-status";
-
         }
-
     };
 
+
+    /* =========================================================
+       STATUS LABEL
+       ========================================================= */
 
     const formatStatus = (status) => {
 
@@ -119,9 +133,7 @@ function RequestHistory() {
 
             default:
                 return status || "Unknown";
-
         }
-
     };
 
 
@@ -131,17 +143,13 @@ function RequestHistory() {
 
     const formatPrice = (price) => {
 
-        const numericPrice =
-            Number(price);
+        const numericPrice = Number(price);
 
         if (Number.isNaN(numericPrice)) {
             return "₹0";
         }
 
-        return `₹${numericPrice.toLocaleString(
-            "en-IN"
-        )}`;
-
+        return `₹${numericPrice.toLocaleString("en-IN")}`;
     };
 
 
@@ -158,19 +166,22 @@ function RequestHistory() {
         const parsedDate =
             new Date(date);
 
-        if (Number.isNaN(parsedDate.getTime())) {
+        if (
+            Number.isNaN(
+                parsedDate.getTime()
+            )
+        ) {
             return "—";
         }
 
         return parsedDate.toLocaleDateString(
             "en-IN"
         );
-
     };
 
 
     /* =========================================================
-       OPEN RATING PAGE
+       RATE PRODUCT
        ========================================================= */
 
     const handleRateProduct = (request) => {
@@ -193,6 +204,85 @@ function RequestHistory() {
                 }
             }
         );
+    };
+
+
+    /* =========================================================
+       VIEW ORDER STATUS
+       ========================================================= */
+
+    const handleViewOrderStatus = async (request) => {
+
+        /*
+         * IMPORTANT:
+         * Open the tracker FIRST.
+         *
+         * The tracker must not depend on the API call
+         * succeeding before it becomes visible.
+         */
+
+        setSelectedRequest(request);
+
+        setOrderStatus(null);
+
+
+        try {
+
+            const response = await axios.get(
+                `http://localhost:8080/api/orders/status/${request.productId}`
+            );
+
+
+            const data =
+                response.data?.data;
+
+
+            if (data) {
+
+                setOrderStatus(data);
+
+            } else {
+
+                setOrderStatus({
+                    orderStatus: null,
+                    updatedDate: null
+                });
+
+            }
+
+        } catch (error) {
+
+            /*
+             * Do NOT close the tracker if the request fails.
+             *
+             * This also handles approved requests which
+             * do not have an order_tracking record yet.
+             */
+
+            console.error(
+                `Failed to load order status for product ${request.productId}:`,
+                error
+            );
+
+            setOrderStatus({
+                orderStatus: null,
+                updatedDate: null
+            });
+
+        }
+
+    };
+
+
+    /* =========================================================
+       CLOSE ORDER STATUS
+       ========================================================= */
+
+    const closeOrderStatus = () => {
+
+        setSelectedRequest(null);
+
+        setOrderStatus(null);
 
     };
 
@@ -221,14 +311,13 @@ function RequestHistory() {
                                 Request History
                             </h2>
 
-
                             <DownloadDropdown />
 
                         </div>
 
 
                         {/* =================================================
-                            REQUEST TABLE
+                            TABLE
                         ================================================= */}
 
                         <div className="history-table-card">
@@ -237,10 +326,7 @@ function RequestHistory() {
 
                                 <div className="history-loading">
 
-                                    <div
-                                        className="spinner-border"
-                                        role="status"
-                                    ></div>
+                                    <div className="spinner-border text-secondary"></div>
 
                                     <p>
                                         Loading request history...
@@ -252,33 +338,11 @@ function RequestHistory() {
 
                                 <div className="history-empty">
 
-                                    <div className="history-empty-icon">
-
-                                        <i className="bi bi-inbox"></i>
-
-                                    </div>
-
-                                    <h5>
-                                        No requests found
-                                    </h5>
+                                    <i className="bi bi-inbox"></i>
 
                                     <p>
-                                        You haven't raised any procurement requests yet.
+                                        No requests found.
                                     </p>
-
-                                    <button
-                                        type="button"
-                                        className="btn btn-dark"
-                                        onClick={() =>
-                                            navigate("/raise-request")
-                                        }
-                                    >
-
-                                        <i className="bi bi-plus-lg me-2"></i>
-
-                                        Raise Request
-
-                                    </button>
 
                                 </div>
 
@@ -335,6 +399,11 @@ function RequestHistory() {
                                                         "DELIVERED";
 
 
+                                                    const isApproved =
+                                                        request.status ===
+                                                        "APPROVED";
+
+
                                                     return (
 
                                                         <tr
@@ -345,32 +414,34 @@ function RequestHistory() {
                                                             }
                                                         >
 
+
+                                                            {/* =========================
+                                                                ID
+                                                            ========================= */}
+
                                                             <td>
 
                                                                 <span className="history-id">
 
                                                                     #
-                                                                    {
-                                                                        request.productId ||
+                                                                    {request.productId ||
                                                                         request.id ||
-                                                                        "—"
-                                                                    }
+                                                                        "—"}
 
                                                                 </span>
 
                                                             </td>
 
 
-                                                            {/* =================================================
+                                                            {/* =========================
                                                                 PRODUCT
-                                                            ================================================= */}
+                                                            ========================= */}
 
                                                             <td>
 
                                                                 {isDelivered ? (
 
-                                                                    <button
-                                                                        type="button"
+                                                                    <span
                                                                         className="history-product rating-product-link"
                                                                         onClick={() =>
                                                                             handleRateProduct(
@@ -380,21 +451,34 @@ function RequestHistory() {
                                                                         title="Click to rate this delivered product"
                                                                     >
 
-                                                                        {
-                                                                            request.productName ||
-                                                                            "—"
-                                                                        }
+                                                                        {request.productName ||
+                                                                            "—"}
 
-                                                                    </button>
+                                                                    </span>
+
+                                                                ) : isApproved ? (
+
+                                                                    <span
+                                                                        className="history-product order-status-product-link"
+                                                                        onClick={() =>
+                                                                            handleViewOrderStatus(
+                                                                                request
+                                                                            )
+                                                                        }
+                                                                        title="Click to view order status"
+                                                                    >
+
+                                                                        {request.productName ||
+                                                                            "—"}
+
+                                                                    </span>
 
                                                                 ) : (
 
                                                                     <span className="history-product">
 
-                                                                        {
-                                                                            request.productName ||
-                                                                            "—"
-                                                                        }
+                                                                        {request.productName ||
+                                                                            "—"}
 
                                                                     </span>
 
@@ -403,85 +487,97 @@ function RequestHistory() {
                                                             </td>
 
 
+                                                            {/* =========================
+                                                                DEPARTMENT
+                                                            ========================= */}
+
                                                             <td>
 
-                                                                {
-                                                                    request.department ||
-                                                                    "—"
-                                                                }
+                                                                {request.department ||
+                                                                    "—"}
 
                                                             </td>
 
 
+                                                            {/* =========================
+                                                                QUANTITY
+                                                            ========================= */}
+
                                                             <td>
 
-                                                                {
-                                                                    request.quantity ??
-                                                                    0
-                                                                }
+                                                                {request.quantity ??
+                                                                    0}
 
                                                             </td>
 
+
+                                                            {/* =========================
+                                                                TOTAL PRICE
+                                                            ========================= */}
 
                                                             <td>
 
                                                                 <span className="history-price">
 
-                                                                    {
-                                                                        formatPrice(
-                                                                            request.totalPrice
-                                                                        )
-                                                                    }
+                                                                    {formatPrice(
+                                                                        request.totalPrice
+                                                                    )}
 
                                                                 </span>
 
                                                             </td>
 
 
-                                                            {/* =================================================
+                                                            {/* =========================
                                                                 STATUS
-                                                            ================================================= */}
+                                                            ========================= */}
 
                                                             <td>
 
                                                                 {isDelivered ? (
 
-                                                                    <button
-                                                                        type="button"
-                                                                        className="rating-status-button"
-                                                                        onClick={() =>
-                                                                            handleRateProduct(
-                                                                                request
+                                                                    <span
+                                                                        className={
+                                                                            getStatusClass(
+                                                                                request.status
                                                                             )
                                                                         }
                                                                     >
 
-                                                                        <span
-                                                                            className={
-                                                                                getStatusClass(
-                                                                                    request.status
-                                                                                )
-                                                                            }
-                                                                        >
+                                                                        <span className="history-status-dot"></span>
+
+                                                                        {formatStatus(
+                                                                            request.status
+                                                                        )}
+
+                                                                    </span>
+
+                                                                ) : isApproved ? (
+
+                                                                    <span
+                                                                        className="order-status-table-button"
+                                                                        onClick={() =>
+                                                                            handleViewOrderStatus(
+                                                                                request
+                                                                            )
+                                                                        }
+                                                                        title="Click to view order status"
+                                                                    >
+
+                                                                        <span className="history-status approved">
 
                                                                             <span className="history-status-dot"></span>
 
-                                                                            {
-                                                                                formatStatus(
-                                                                                    request.status
-                                                                                )
-                                                                            }
+                                                                            Approved
 
                                                                         </span>
 
 
-                                                                        <span className="rating-action-text">
-
-                                                                            ⭐ Rate Product
-
+                                                                        <span className="order-status-arrow">
+                                                                            ›
                                                                         </span>
 
-                                                                    </button>
+                                                                    </span>
 
                                                                 ) : (
 
@@ -495,11 +591,9 @@ function RequestHistory() {
 
                                                                         <span className="history-status-dot"></span>
 
-                                                                        {
-                                                                            formatStatus(
-                                                                                request.status
-                                                                            )
-                                                                        }
+                                                                        {formatStatus(
+                                                                            request.status
+                                                                        )}
 
                                                                     </span>
 
@@ -508,13 +602,15 @@ function RequestHistory() {
                                                             </td>
 
 
+                                                            {/* =========================
+                                                                DATE
+                                                            ========================= */}
+
                                                             <td>
 
-                                                                {
-                                                                    formatDate(
-                                                                        request.createdDate
-                                                                    )
-                                                                }
+                                                                {formatDate(
+                                                                    request.createdDate
+                                                                )}
 
                                                             </td>
 
@@ -541,10 +637,43 @@ function RequestHistory() {
 
             </main>
 
+
+            {/* =========================================================
+                ORDER STATUS TRACKER
+            ========================================================= */}
+
+            {selectedRequest && (
+
+                <OrderStatusTracker
+
+                    currentStatus={
+                        orderStatus?.orderStatus || null
+                    }
+
+                    productName={
+                        selectedRequest.productName
+                    }
+
+                    productId={
+                        selectedRequest.productId
+                    }
+
+                    updatedDate={
+                        orderStatus?.updatedDate || null
+                    }
+
+                    onClose={
+                        closeOrderStatus
+                    }
+
+                />
+
+            )}
+
         </div>
 
     );
-
 }
+
 
 export default RequestHistory;

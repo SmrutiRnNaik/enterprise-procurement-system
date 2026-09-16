@@ -145,28 +145,100 @@ function PaymentPage() {
 
     const supplierUpiIds = {
 
-        "Furniture World":
-            "furniture@upi",
-
-        "Lenovo India":
-            "lenovo@upi",
+        "Dell India":
+            "dell-india@infypay",
 
         "HP India":
-            "hpindia@upi"
+            "hp-india@infypay",
+
+        "Furniture World":
+            "furniture-world@infypay",
+
+        "Cisco Distributor":
+            "cisco-distributor@infypay",
+
+        "Lenovo India":
+            "lenovo-india@infypay",
+
+        "Canon India":
+            "canon-india@infypay",
+
+        "Epson India":
+            "epson-india@infypay",
+
+        "Godrej Interio":
+            "godrej-interio@infypay",
+
+        "Classmate Office Supplies":
+            "classmate-office-supplies@infypay",
+
+        "JK Paper Office Solutions":
+            "jk-paper-office-solutions@infypay",
+
+        "TP-Link India":
+            "tp-link-india@infypay",
+
+        "Apple India":
+            "apple-india@infypay",
+
+        "Brother India":
+            "brother-india@infypay",
+
+        "Logitech India":
+            "logitech-india@infypay",
+
+        "D-Link India":
+            "d-link-india@infypay"
 
     };
 
 
     const supplierMpins = {
 
-        "Furniture World":
-            "1234",
-
-        "Lenovo India":
+        "Dell India":
             "1234",
 
         "HP India":
-            "1234"
+            "5678",
+
+        "Furniture World":
+            "9012",
+
+        "Cisco Distributor":
+            "3456",
+
+        "Lenovo India":
+            "2468",
+
+        "Canon India":
+            "1357",
+
+        "Epson India":
+            "7890",
+
+        "Godrej Interio":
+            "1122",
+
+        "Classmate Office Supplies":
+            "4455",
+
+        "JK Paper Office Solutions":
+            "7788",
+
+        "TP-Link India":
+            "9988",
+
+        "Apple India":
+            "2233",
+
+        "Brother India":
+            "5566",
+
+        "Logitech India":
+            "6677",
+
+        "D-Link India":
+            "8899"
 
     };
 
@@ -174,7 +246,7 @@ function PaymentPage() {
     const supplierUpiId =
         product.supplierUpiId ||
         supplierUpiIds[product.supplierName] ||
-        "supplier@upi";
+        "supplier@infypay";
 
 
     const supplierMpin =
@@ -600,7 +672,12 @@ function PaymentPage() {
                     paymentMethod,
 
                 transactionReference:
-                    reference
+                    reference,
+
+                mpin:
+                    paymentMethod === "UPI"
+                        ? mpin
+                        : null
 
             };
 

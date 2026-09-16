@@ -4,12 +4,15 @@ import com.infosys.procurement.dto.OrderTrackingRequest;
 import com.infosys.procurement.dto.OrderTrackingResponse;
 import com.infosys.procurement.dto.RequestResponse;
 import com.infosys.procurement.service.OrderTrackingService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
+@CrossOrigin(origins = "http://localhost:5173")
 public class OrderTrackingController {
 
     @Autowired
@@ -20,13 +23,18 @@ public class OrderTrackingController {
             @PathVariable Long productId,
             @Valid @RequestBody OrderTrackingRequest request) {
 
-        return orderTrackingService.updateOrderStatus(productId, request);
+        return orderTrackingService.updateOrderStatus(
+                productId,
+                request
+        );
     }
 
     @GetMapping("/status/{productId}")
     public RequestResponse<OrderTrackingResponse> getOrderStatus(
             @PathVariable Long productId) {
 
-        return orderTrackingService.getOrderStatus(productId);
+        return orderTrackingService.getOrderStatus(
+                productId
+        );
     }
 }

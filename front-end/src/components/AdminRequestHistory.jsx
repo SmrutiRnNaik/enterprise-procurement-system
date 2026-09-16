@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AdminSidebar from "./AdminSidebar";
+import OrderStatusTracker from "./OrderStatusTracker";
 
 import {
     getAdminRequests,
@@ -15,22 +16,25 @@ import {
     showConfirm
 } from "../utils/notifications";
 
+import "./AdminRequestHistory.css";
+
 
 function AdminRequestHistory() {
 
     const navigate = useNavigate();
 
     const [requests, setRequests] = useState([]);
-
     const [loading, setLoading] = useState(true);
-
     const [updatingAction, setUpdatingAction] = useState(null);
-
     const [downloading, setDownloading] = useState(false);
+
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [orderStatus, setOrderStatus] = useState(null);
+    const [statusLoading, setStatusLoading] = useState(false);
 
 
     /* =========================================================
-       FETCH ALL ADMIN REQUESTS
+       FETCH REQUESTS
        ========================================================= */
 
     const fetchRequests = async () => {
@@ -39,8 +43,7 @@ function AdminRequestHistory() {
 
             setLoading(true);
 
-            const response =
-                await getAdminRequests();
+            const response = await getAdminRequests();
 
             setRequests(
                 response.data?.data || []
@@ -68,14 +71,12 @@ function AdminRequestHistory() {
 
 
     useEffect(() => {
-
         fetchRequests();
-
     }, []);
 
 
     /* =========================================================
-       STATUS BADGE
+       STATUS
        ========================================================= */
 
     const getBadge = (status) => {
@@ -83,25 +84,24 @@ function AdminRequestHistory() {
         switch (status) {
 
             case "APPROVED":
-                return "success";
+                return "approved";
 
             case "PENDING_APPROVAL":
-                return "warning";
+                return "pending";
 
             case "REJECTED":
-                return "danger";
+                return "rejected";
+
+            case "DELIVERED":
+                return "delivered";
 
             default:
-                return "secondary";
+                return "default";
 
         }
 
     };
 
-
-    /* =========================================================
-       FORMAT STATUS
-       ========================================================= */
 
     const formatStatus = (status) => {
 
@@ -116,8 +116,11 @@ function AdminRequestHistory() {
             case "REJECTED":
                 return "Rejected";
 
+            case "DELIVERED":
+                return "Delivered";
+
             default:
-                return status;
+                return status || "Unknown";
 
         }
 
@@ -125,7 +128,125 @@ function AdminRequestHistory() {
 
 
     /* =========================================================
-       APPROVE / REJECT REQUEST
+       ORDER STATUS TRACKER
+       ========================================================= */
+
+    const handleViewOrderStatus = async (request) => {
+
+        try {
+
+            setSelectedRequest(request);
+            setOrderStatus(null);
+            setStatusLoading(true);
+
+
+            const response = await fetch(
+                `http://localhost:8080/api/orders/status/${request.productId}`
+            );
+
+
+            /*
+             * No tracking record exists yet.
+             *
+             * This is not an error.
+             * Open the tracker with no current status
+             * so all milestones remain dark.
+             */
+            if (response.status === 404) {
+
+                setOrderStatus({
+                    orderStatus: null,
+                    updatedDate: null
+                });
+
+                return;
+            }
+
+
+            /*
+             * Any other unsuccessful response
+             * is treated as a real error.
+             */
+            if (!response.ok) {
+
+                let errorMessage =
+                    "Unable to fetch order status.";
+
+                try {
+
+                    const errorData =
+                        await response.json();
+
+                    errorMessage =
+                        errorData?.message ||
+                        errorMessage;
+
+                } catch (error) {
+                    // Ignore JSON parsing failure.
+                }
+
+                throw new Error(errorMessage);
+
+            }
+
+
+            const responseData =
+                await response.json();
+
+
+            const data =
+                responseData?.data;
+
+
+            if (!data) {
+
+                throw new Error(
+                    "Order status information is unavailable."
+                );
+
+            }
+
+
+            setOrderStatus(data);
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load order status:",
+                error
+            );
+
+
+            setSelectedRequest(null);
+            setOrderStatus(null);
+
+
+            showError(
+                "Unable to Load Status",
+                error.message ||
+                "Could not fetch the current order status."
+            );
+
+        } finally {
+
+            setStatusLoading(false);
+
+        }
+
+    };
+
+
+    const closeOrderStatus = () => {
+
+        setSelectedRequest(null);
+        setOrderStatus(null);
+        setStatusLoading(false);
+
+    };
+
+
+    /* =========================================================
+       APPROVE / REJECT
        ========================================================= */
 
     const handleStatusChange = async (
@@ -142,49 +263,29 @@ function AdminRequestHistory() {
                 : "reject";
 
 
-        /* =====================================================
-           CONFIRMATION POPUP
-        ===================================================== */
-
         const result = await showConfirm(
-
             isApproving
                 ? "Approve Request?"
                 : "Reject Request?",
-
             `Are you sure you want to ${action} request #${productId}?`,
-
             isApproving
                 ? "Approve"
                 : "Reject"
-
         );
 
 
         if (!result.isConfirmed) {
-
             return;
-
         }
 
 
         try {
 
-            /*
-             * Store both product ID and action.
-             * This allows only the clicked button to
-             * display the loading spinner.
-             */
-
             setUpdatingAction({
-                productId: productId,
-                status: status
+                productId,
+                status
             });
 
-
-            /* =================================================
-               UPDATE REQUEST STATUS
-               ================================================= */
 
             await updateRequestStatus(
                 productId,
@@ -192,15 +293,7 @@ function AdminRequestHistory() {
             );
 
 
-            /* =================================================
-               APPROVED REQUEST
-               ================================================= */
-
             if (isApproving) {
-
-                /*
-                 * Find the request that was just approved.
-                 */
 
                 const approvedRequest =
                     requests.find(
@@ -208,11 +301,6 @@ function AdminRequestHistory() {
                             request.productId === productId
                     );
 
-
-                /*
-                 * If request details cannot be found,
-                 * reload the list and stop.
-                 */
 
                 if (!approvedRequest) {
 
@@ -228,26 +316,11 @@ function AdminRequestHistory() {
                 }
 
 
-                /*
-                 * Show approval message.
-                 */
-
                 showSuccess(
                     "Request Approved",
                     `Request #${productId} has been approved successfully.`
                 );
 
-
-                /*
-                 * Open payment page.
-                 *
-                 * The complete approved request is passed
-                 * through React Router state.
-                 *
-                 * PaymentPage can access it using:
-                 *
-                 * location.state.product
-                 */
 
                 navigate(
                     "/payment",
@@ -258,22 +331,10 @@ function AdminRequestHistory() {
                     }
                 );
 
-
-                /*
-                 * Stop here.
-                 *
-                 * We do not reload the request page because
-                 * the admin is being taken to the payment page.
-                 */
-
                 return;
 
             }
 
-
-            /* =================================================
-               REJECTED REQUEST
-               ================================================= */
 
             showSuccess(
                 "Request Rejected",
@@ -281,13 +342,7 @@ function AdminRequestHistory() {
             );
 
 
-            /*
-             * Reload the complete admin request list
-             * after rejection.
-             */
-
             await fetchRequests();
-
 
         } catch (error) {
 
@@ -296,17 +351,14 @@ function AdminRequestHistory() {
                 error
             );
 
-
             const message =
                 error.response?.data?.message ||
                 "Failed to update request status.";
-
 
             showError(
                 "Update Failed",
                 message
             );
-
 
         } finally {
 
@@ -321,39 +373,28 @@ function AdminRequestHistory() {
        DOWNLOAD
        ========================================================= */
 
-    const handleDownload = async (
-        format
-    ) => {
+    const handleDownload = async (format) => {
 
         try {
 
             setDownloading(true);
 
-
             const response =
-                await downloadAdminHistory(
-                    format
-                );
+                await downloadAdminHistory(format);
 
 
             let extension = format;
 
             if (format === "excel") {
-
                 extension = "xlsx";
-
             }
 
 
             const mimeType =
                 format === "pdf"
-
                     ? "application/pdf"
-
                     : format === "csv"
-
                         ? "text/csv"
-
                         : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 
@@ -367,9 +408,7 @@ function AdminRequestHistory() {
 
 
             const url =
-                window.URL.createObjectURL(
-                    blob
-                );
+                window.URL.createObjectURL(blob);
 
 
             const link =
@@ -378,22 +417,17 @@ function AdminRequestHistory() {
 
             link.href = url;
 
-
             link.download =
                 `admin-procurement-history.${extension}`;
 
 
             document.body.appendChild(link);
 
-
             link.click();
-
 
             link.remove();
 
-
             window.URL.revokeObjectURL(url);
-
 
         } catch (error) {
 
@@ -402,12 +436,10 @@ function AdminRequestHistory() {
                 error
             );
 
-
             showError(
                 "Download Failed",
                 "Unable to download request history."
             );
-
 
         } finally {
 
@@ -419,26 +451,26 @@ function AdminRequestHistory() {
 
 
     /* =========================================================
-       LOADING PAGE
+       LOADING
        ========================================================= */
 
     if (loading) {
 
         return (
 
-            <div className="dashboard-page">
+            <div className="dashboard-page admin-history-page">
 
                 <AdminSidebar />
 
                 <main className="dashboard-content">
 
-                    <div className="container-fluid">
+                    <div className="admin-history-container">
 
-                        <div className="dashboard-header mb-4">
+                        <div className="admin-history-header">
 
                             <div>
 
-                                <span className="raise-request-label">
+                                <span className="admin-history-eyebrow">
                                     ADMINISTRATION
                                 </span>
 
@@ -451,18 +483,15 @@ function AdminRequestHistory() {
                         </div>
 
 
-                        <div className="card border-0 shadow-sm">
+                        <div className="admin-history-panel">
 
-                            <div className="card-body text-center py-5">
+                            <div className="admin-history-loading">
 
-                                <div
-                                    className="spinner-border"
-                                    role="status"
-                                ></div>
+                                <div className="admin-history-spinner"></div>
 
-                                <p className="text-muted mt-3 mb-0">
+                                <span>
                                     Loading requests...
-                                </p>
+                                </span>
 
                             </div>
 
@@ -485,25 +514,24 @@ function AdminRequestHistory() {
 
     return (
 
-        <div className="dashboard-page">
+        <div className="dashboard-page admin-history-page">
 
             <AdminSidebar />
 
-
             <main className="dashboard-content">
 
-                <div className="container-fluid">
+                <div className="admin-history-container">
 
 
                     {/* =================================================
-                        HEADER
+                       HEADER
                     ================================================= */}
 
-                    <div className="dashboard-header mb-4">
+                    <div className="admin-history-header">
 
                         <div>
 
-                            <span className="raise-request-label">
+                            <span className="admin-history-eyebrow">
                                 ADMINISTRATION
                             </span>
 
@@ -511,238 +539,87 @@ function AdminRequestHistory() {
                                 Request History
                             </h2>
 
-                            <p className="text-muted mb-0">
-
+                            <p>
                                 Review and manage all procurement requests
                                 across the organization.
-
                             </p>
 
                         </div>
 
 
-                        {/* =================================================
-                            DOWNLOAD
-                        ================================================= */}
+                        <div className="admin-history-actions">
 
-                        <div className="dropdown">
+                            <div className="admin-history-dropdown">
 
-                            <button
-                                className="btn btn-dark dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                                disabled={downloading}
-                            >
+                                <button
+                                    type="button"
+                                    className="admin-history-download"
+                                    disabled={downloading}
+                                    onClick={(event) => {
 
-                                {downloading ? (
+                                        const menu =
+                                            event.currentTarget
+                                                .nextElementSibling;
 
-                                    <>
+                                        menu.classList.toggle("show");
 
-                                        <span
-                                            className="spinner-border spinner-border-sm me-2"
-                                            role="status"
-                                        ></span>
+                                    }}
+                                >
 
-                                        Downloading...
+                                    {downloading ? (
 
-                                    </>
+                                        <>
+                                            <span className="admin-history-small-spinner"></span>
+                                            Downloading...
+                                        </>
 
-                                ) : (
+                                    ) : (
 
-                                    <>
+                                        <>
+                                            <i className="bi bi-download"></i>
+                                            Download
+                                            <i className="bi bi-chevron-down"></i>
+                                        </>
 
-                                        <i className="bi bi-download me-2"></i>
+                                    )}
 
-                                        Download
-
-                                    </>
-
-                                )}
-
-                            </button>
+                                </button>
 
 
-                            <ul className="dropdown-menu dropdown-menu-end">
-
-                                <li>
+                                <div className="admin-history-download-menu">
 
                                     <button
                                         type="button"
-                                        className="dropdown-item"
                                         onClick={() =>
                                             handleDownload("pdf")
                                         }
                                     >
-
-                                        <i className="bi bi-file-earmark-pdf me-2"></i>
-
+                                        <i className="bi bi-file-earmark-pdf"></i>
                                         Download PDF
-
                                     </button>
 
-                                </li>
-
-
-                                <li>
 
                                     <button
                                         type="button"
-                                        className="dropdown-item"
                                         onClick={() =>
                                             handleDownload("xlsx")
                                         }
                                     >
-
-                                        <i className="bi bi-file-earmark-excel me-2"></i>
-
+                                        <i className="bi bi-file-earmark-excel"></i>
                                         Download Excel
-
                                     </button>
 
-                                </li>
-
-
-                                <li>
 
                                     <button
                                         type="button"
-                                        className="dropdown-item"
                                         onClick={() =>
                                             handleDownload("csv")
                                         }
                                     >
-
-                                        <i className="bi bi-filetype-csv me-2"></i>
-
+                                        <i className="bi bi-filetype-csv"></i>
                                         Download CSV
-
                                     </button>
 
-                                </li>
-
-                            </ul>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* =================================================
-                        SUMMARY CARDS
-                    ================================================= */}
-
-                    <div className="row g-3 mb-4">
-
-
-                        {/* TOTAL */}
-
-                        <div className="col-md-3">
-
-                            <div className="card border-0 shadow-sm">
-
-                                <div className="card-body">
-
-                                    <small className="text-muted">
-                                        Total Requests
-                                    </small>
-
-                                    <h3 className="fw-bold mb-0">
-                                        {requests.length}
-                                    </h3>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* PENDING */}
-
-                        <div className="col-md-3">
-
-                            <div className="card border-0 shadow-sm">
-
-                                <div className="card-body">
-
-                                    <small className="text-muted">
-                                        Pending Approval
-                                    </small>
-
-                                    <h3 className="fw-bold mb-0">
-
-                                        {
-                                            requests.filter(
-                                                request =>
-                                                    request.status ===
-                                                    "PENDING_APPROVAL"
-                                            ).length
-                                        }
-
-                                    </h3>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* APPROVED */}
-
-                        <div className="col-md-3">
-
-                            <div className="card border-0 shadow-sm">
-
-                                <div className="card-body">
-
-                                    <small className="text-muted">
-                                        Approved
-                                    </small>
-
-                                    <h3 className="fw-bold mb-0">
-
-                                        {
-                                            requests.filter(
-                                                request =>
-                                                    request.status ===
-                                                    "APPROVED"
-                                            ).length
-                                        }
-
-                                    </h3>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* REJECTED */}
-
-                        <div className="col-md-3">
-
-                            <div className="card border-0 shadow-sm">
-
-                                <div className="card-body">
-
-                                    <small className="text-muted">
-                                        Rejected
-                                    </small>
-
-                                    <h3 className="fw-bold mb-0">
-
-                                        {
-                                            requests.filter(
-                                                request =>
-                                                    request.status ===
-                                                    "REJECTED"
-                                            ).length
-                                        }
-
-                                    </h3>
-
                                 </div>
 
                             </div>
@@ -753,115 +630,208 @@ function AdminRequestHistory() {
 
 
                     {/* =================================================
-                        REQUEST TABLE
+                       SUMMARY
                     ================================================= */}
 
-                    <div className="card border-0 shadow-sm">
+                    <div className="admin-summary-grid">
 
-                        <div className="card-body">
+                        <div className="admin-stat-card">
 
+                            <div className="admin-stat-icon neutral">
+                                <i className="bi bi-layers"></i>
+                            </div>
 
-                            {/* TABLE HEADER */}
+                            <div>
 
-                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <span>
+                                    Total Requests
+                                </span>
 
-                                <div>
+                                <strong>
+                                    {requests.length}
+                                </strong>
 
-                                    <h5 className="fw-bold mb-1">
-                                        All Procurement Requests
-                                    </h5>
+                            </div>
 
-                                    <p className="text-muted small mb-0">
-
-                                        {requests.length}
-                                        {" "}
-                                        total requests
-
-                                    </p>
-
-                                </div>
+                        </div>
 
 
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-dark"
-                                    onClick={() =>
-                                        navigate(
-                                            "/admin-dashboard"
-                                        )
+                        <div className="admin-stat-card">
+
+                            <div className="admin-stat-icon pending">
+                                <i className="bi bi-hourglass-split"></i>
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Pending Approval
+                                </span>
+
+                                <strong>
+                                    {
+                                        requests.filter(
+                                            request =>
+                                                request.status ===
+                                                "PENDING_APPROVAL"
+                                        ).length
                                     }
-                                >
+                                </strong>
 
-                                    <i className="bi bi-arrow-left me-2"></i>
+                            </div>
 
-                                    Dashboard
+                        </div>
 
-                                </button>
+
+                        <div className="admin-stat-card">
+
+                            <div className="admin-stat-icon approved">
+                                <i className="bi bi-check-lg"></i>
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Approved
+                                </span>
+
+                                <strong>
+                                    {
+                                        requests.filter(
+                                            request =>
+                                                request.status ===
+                                                "APPROVED"
+                                        ).length
+                                    }
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div className="admin-stat-card">
+
+                            <div className="admin-stat-icon rejected">
+                                <i className="bi bi-x-lg"></i>
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Rejected
+                                </span>
+
+                                <strong>
+                                    {
+                                        requests.filter(
+                                            request =>
+                                                request.status ===
+                                                "REJECTED"
+                                        ).length
+                                    }
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* =================================================
+                       TABLE PANEL
+                    ================================================= */}
+
+                    <div className="admin-history-panel">
+
+                        <div className="admin-history-panel-header">
+
+                            <div>
+
+                                <h3>
+                                    All Procurement Requests
+                                </h3>
+
+                                <span>
+                                    {requests.length} total requests
+                                </span>
 
                             </div>
 
 
-                            {/* EMPTY STATE */}
+                            <button
+                                type="button"
+                                className="admin-history-back"
+                                onClick={() =>
+                                    navigate("/admin-dashboard")
+                                }
+                            >
 
-                            {requests.length === 0 ? (
+                                <i className="bi bi-arrow-left"></i>
 
-                                <div className="request-empty-state">
+                                Dashboard
 
-                                    <div className="request-empty-icon">
+                            </button>
 
-                                        <i className="bi bi-inbox"></i>
-
-                                    </div>
-
-                                    <h6 className="fw-bold mt-3">
-                                        No procurement requests
-                                    </h6>
-
-                                    <p className="text-muted mb-0">
-                                        There are currently no requests.
-                                    </p>
-
-                                </div>
-
-                            ) : (
-
-                                <div className="table-responsive">
-
-                                    <table className="table table-hover align-middle mb-0">
-
-                                        <thead className="table-light">
-
-                                            <tr>
-
-                                                <th>ID</th>
-
-                                                <th>Product</th>
-
-                                                <th>Requested By</th>
-
-                                                <th>Department</th>
-
-                                                <th>Category</th>
-
-                                                <th>Qty</th>
-
-                                                <th>Total Price</th>
-
-                                                <th>Status</th>
-
-                                                <th>Action</th>
-
-                                                <th>Date</th>
-
-                                            </tr>
-
-                                        </thead>
+                        </div>
 
 
-                                        <tbody>
+                        {requests.length === 0 ? (
 
-                                            {requests.map(
-                                                (request) => (
+                            <div className="admin-history-empty">
+
+                                <i className="bi bi-inbox"></i>
+
+                                <h4>
+                                    No procurement requests
+                                </h4>
+
+                                <p>
+                                    There are currently no requests.
+                                </p>
+
+                            </div>
+
+                        ) : (
+
+                            <div className="admin-history-table-wrapper">
+
+                                <table className="admin-history-table">
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>ID</th>
+                                            <th>Product</th>
+                                            <th>Requested By</th>
+                                            <th>Department</th>
+                                            <th>Category</th>
+                                            <th>Qty</th>
+                                            <th>Total Price</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                            <th>Date</th>
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {requests.map(
+                                            (request) => {
+
+                                                const isTrackable =
+                                                    request.status ===
+                                                    "APPROVED" ||
+                                                    request.status ===
+                                                    "DELIVERED";
+
+
+                                                return (
 
                                                     <tr
                                                         key={
@@ -869,126 +839,169 @@ function AdminRequestHistory() {
                                                         }
                                                     >
 
-
-                                                        {/* ID */}
-
                                                         <td>
 
-                                                            #
-                                                            {
-                                                                request.productId
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* PRODUCT */}
-
-                                                        <td className="fw-semibold">
-
-                                                            {
-                                                                request.productName
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* REQUESTED BY */}
-
-                                                        <td>
-
-                                                            {
-                                                                request.requestedBy
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* DEPARTMENT */}
-
-                                                        <td>
-
-                                                            {
-                                                                request.department
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* CATEGORY */}
-
-                                                        <td>
-
-                                                            {
-                                                                request.category
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* QUANTITY */}
-
-                                                        <td>
-
-                                                            {
-                                                                request.quantity
-                                                            }
-
-                                                        </td>
-
-
-                                                        {/* TOTAL PRICE */}
-
-                                                        <td>
-
-                                                            ₹
-                                                            {Number(
-                                                                request.totalPrice
-                                                            ).toLocaleString(
-                                                                "en-IN"
-                                                            )}
-
-                                                        </td>
-
-
-                                                        {/* STATUS */}
-
-                                                        <td>
-
-                                                            <span
-                                                                className={`badge bg-${getBadge(
-                                                                    request.status
-                                                                )}`}
-                                                            >
-
-                                                                {
-                                                                    formatStatus(
-                                                                        request.status
-                                                                    )
-                                                                }
-
+                                                            <span className="admin-request-id">
+                                                                #{request.productId}
                                                             </span>
 
                                                         </td>
 
 
-                                                        {/* ACTION */}
+                                                        <td>
+
+                                                            {isTrackable ? (
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-product-link"
+                                                                    onClick={() =>
+                                                                        handleViewOrderStatus(
+                                                                            request
+                                                                        )
+                                                                    }
+                                                                >
+
+                                                                    {
+                                                                        request.productName
+                                                                    }
+
+                                                                    <i className="bi bi-arrow-up-right"></i>
+
+                                                                </button>
+
+                                                            ) : (
+
+                                                                <span className="admin-product-name">
+                                                                    {
+                                                                        request.productName
+                                                                    }
+                                                                </span>
+
+                                                            )}
+
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                request.requestedBy ||
+                                                                "—"
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                request.department ||
+                                                                "—"
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                request.category ||
+                                                                "—"
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+                                                            {
+                                                                request.quantity
+                                                            }
+                                                        </td>
+
+
+                                                        <td>
+
+                                                            <span className="admin-price">
+                                                                ₹
+                                                                {Number(
+                                                                    request.totalPrice
+                                                                ).toLocaleString(
+                                                                    "en-IN"
+                                                                )}
+                                                            </span>
+
+                                                        </td>
+
+
+                                                        <td>
+
+                                                            {isTrackable ? (
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-status-button"
+                                                                    onClick={() =>
+                                                                        handleViewOrderStatus(
+                                                                            request
+                                                                        )
+                                                                    }
+                                                                >
+
+                                                                    <span
+                                                                        className={
+                                                                            `admin-status-badge ${getBadge(
+                                                                                request.status
+                                                                            )}`
+                                                                        }
+                                                                    >
+
+                                                                        <span className="admin-status-dot"></span>
+
+                                                                        {
+                                                                            formatStatus(
+                                                                                request.status
+                                                                            )
+                                                                        }
+
+                                                                    </span>
+
+                                                                    <i className="bi bi-chevron-right"></i>
+
+                                                                </button>
+
+                                                            ) : (
+
+                                                                <span
+                                                                    className={
+                                                                        `admin-status-badge ${getBadge(
+                                                                            request.status
+                                                                        )}`
+                                                                    }
+                                                                >
+
+                                                                    <span className="admin-status-dot"></span>
+
+                                                                    {
+                                                                        formatStatus(
+                                                                            request.status
+                                                                        )
+                                                                    }
+
+                                                                </span>
+
+                                                            )}
+
+                                                        </td>
+
 
                                                         <td>
 
                                                             {request.status ===
                                                             "PENDING_APPROVAL" ? (
 
-                                                                <div className="d-flex gap-2">
-
-
-                                                                    {/* APPROVE */}
+                                                                <div className="admin-action-buttons">
 
                                                                     <button
                                                                         type="button"
-                                                                        className="btn btn-sm btn-success"
+                                                                        className="admin-approve-button"
                                                                         disabled={
-                                                                            updatingAction !== null
+                                                                            updatingAction !==
+                                                                            null
                                                                         }
                                                                         onClick={() =>
                                                                             handleStatusChange(
@@ -1000,41 +1013,28 @@ function AdminRequestHistory() {
 
                                                                         {
                                                                             updatingAction?.productId ===
-                                                                            request.productId &&
+                                                                                request.productId &&
                                                                             updatingAction?.status ===
-                                                                            "APPROVED"
+                                                                                "APPROVED"
                                                                                 ? (
-
-                                                                                    <span
-                                                                                        className="spinner-border spinner-border-sm"
-                                                                                        role="status"
-                                                                                    ></span>
-
+                                                                                    <span className="admin-button-spinner"></span>
                                                                                 )
                                                                                 : (
-
                                                                                     <i className="bi bi-check-lg"></i>
-
                                                                                 )
                                                                         }
 
-
-                                                                        <span className="ms-1">
-
-                                                                            Approve
-
-                                                                        </span>
+                                                                        Approve
 
                                                                     </button>
 
 
-                                                                    {/* REJECT */}
-
                                                                     <button
                                                                         type="button"
-                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        className="admin-reject-button"
                                                                         disabled={
-                                                                            updatingAction !== null
+                                                                            updatingAction !==
+                                                                            null
                                                                         }
                                                                         onClick={() =>
                                                                             handleStatusChange(
@@ -1046,42 +1046,27 @@ function AdminRequestHistory() {
 
                                                                         {
                                                                             updatingAction?.productId ===
-                                                                            request.productId &&
+                                                                                request.productId &&
                                                                             updatingAction?.status ===
-                                                                            "REJECTED"
+                                                                                "REJECTED"
                                                                                 ? (
-
-                                                                                    <span
-                                                                                        className="spinner-border spinner-border-sm"
-                                                                                        role="status"
-                                                                                    ></span>
-
+                                                                                    <span className="admin-button-spinner"></span>
                                                                                 )
                                                                                 : (
-
                                                                                     <i className="bi bi-x-lg"></i>
-
                                                                                 )
                                                                         }
 
-
-                                                                        <span className="ms-1">
-
-                                                                            Reject
-
-                                                                        </span>
+                                                                        Reject
 
                                                                     </button>
-
 
                                                                 </div>
 
                                                             ) : (
 
-                                                                <span className="text-muted small">
-
-                                                                    No action
-
+                                                                <span className="admin-no-action">
+                                                                    —
                                                                 </span>
 
                                                             )}
@@ -1089,41 +1074,107 @@ function AdminRequestHistory() {
                                                         </td>
 
 
-                                                        {/* DATE */}
-
                                                         <td>
 
-                                                            {
-                                                                new Date(
-                                                                    request.createdDate
-                                                                ).toLocaleDateString(
-                                                                    "en-IN"
-                                                                )
-                                                            }
+                                                            <span className="admin-date">
+
+                                                                {
+                                                                    new Date(
+                                                                        request.createdDate
+                                                                    ).toLocaleDateString(
+                                                                        "en-IN"
+                                                                    )
+                                                                }
+
+                                                            </span>
 
                                                         </td>
 
-
                                                     </tr>
 
-                                                )
-                                            )}
+                                                );
 
-                                        </tbody>
+                                            }
+                                        )}
 
-                                    </table>
+                                    </tbody>
 
-                                </div>
+                                </table>
 
-                            )}
+                            </div>
 
-                        </div>
+                        )}
 
                     </div>
 
                 </div>
 
             </main>
+
+
+            {/* =========================================================
+               ORDER STATUS
+            ========================================================= */}
+
+            {selectedRequest && (
+
+                statusLoading ? (
+
+                    <div
+                        className="order-status-loading-overlay"
+                        onClick={closeOrderStatus}
+                    >
+
+                        <div
+                            className="order-status-loading-modal"
+                            onClick={(event) =>
+                                event.stopPropagation()
+                            }
+                        >
+
+                            <div className="admin-history-loading">
+
+                                <div className="admin-history-spinner"></div>
+
+                                <span>
+                                    Loading order status...
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                ) : orderStatus ? (
+
+                    <OrderStatusTracker
+
+                        currentStatus={
+                            orderStatus.orderStatus
+                        }
+
+                        productName={
+                            selectedRequest.productName
+                        }
+
+                        productId={
+                            selectedRequest.productId
+                        }
+
+                        updatedDate={
+                            orderStatus.updatedDate
+                        }
+
+                        onClose={
+                            closeOrderStatus
+                        }
+
+                    />
+
+                ) : null
+
+            )}
 
         </div>
 
